@@ -259,79 +259,48 @@ CREATE INDEX idx_livestock_species ON livestock(farm_id, species);
 CREATE INDEX idx_harvest_batch ON harvest_records(batch_code);`;
 
   const EXPRESS_SNIPPET = `/**
- * SOL ECOSYSTEM - Express.js REST API Server (server.js - Step 2)
+ * SOL ECOSYSTEM - Express.js REST API Server (MVC Architecture)
+ * File: backend/server.js
  */
 const express = require('express');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
+const db = require('./config/db');
+const errorHandler = require('./middleware/errorHandler');
+
+// Route Modules
+const authRoutes = require('./routes/authRoutes');
+const farmRoutes = require('./routes/farmRoutes');
+const treeRoutes = require('./routes/treeRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+const traceabilityRoutes = require('./routes/traceabilityRoutes');
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+const PORT = process.env.PORT || 5000;
 
-// JWT Authentication Middleware
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Access denied. Missing bearer token.' });
-  jwt.verify(token, process.env.JWT_SECRET || 'sol_secret', (err, user) => {
-    if (err) return res.status(403).json({ error: 'Invalid token.' });
-    req.user = user;
-    next();
-  });
-};
+app.use(cors({ origin: '*' }));
+app.use(express.json({ limit: '25mb' }));
 
-// 1. Auth Route
-app.post('/api/auth/login', (req, res) => {
-  const { email, password } = req.body;
-  // Authenticate against PostgreSQL users table...
-  const token = jwt.sign({ email, role: 'farm_manager' }, 'sol_secret', { expiresIn: '7d' });
-  res.json({ token, user: { email, fullName: 'Dr. Tariq Al-Mansoor' } });
+// Mount MVC Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/farms', farmRoutes);
+app.use('/api/trees', treeRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/traceability', traceabilityRoutes);
+
+// Health check with PostgreSQL pool query
+app.get('/api/health', async (req, res) => {
+  const ping = await db.query('SELECT NOW() AS current_time');
+  res.json({ status: 'ONLINE', region: 'Mila, Algeria', dbTime: ping.rows[0].current_time });
 });
 
-// 2. Smart Orchard (Trees) CRUD
-app.get('/api/trees', async (req, res) => {
-  const { healthStatus, species, search } = req.query;
-  // SELECT * FROM trees WHERE farm_id = $1 ...
-  res.json({ count: 4250, summary: { healthy: 3820, needsAttention: 320, diseased: 110 } });
-});
+app.use(errorHandler);
 
-app.get('/api/trees/:id', async (req, res) => {
-  // Query individual tree with age, variety, irrigation, and disease history
-  res.json({ tree: { tagCode: req.params.id, variety: 'Chemlali Ancient', healthStatus: 'healthy' } });
-});
-
-// 3. Livestock (Cattle & Sheep) CRUD
-app.get('/api/livestock', async (req, res) => {
-  const { species, healthCondition } = req.query;
-  // SELECT * FROM livestock WHERE species = $1 ...
-  res.json({ total: 680, cattle: 220, sheep: 460 });
-});
-
-// 4. AI Diagnostic Vision Endpoint
-app.post('/api/ai/diagnose', (req, res) => {
-  // Analyzes image vector or mock leaf parameters
-  res.json({
-    disease: 'Olive Peacock Spot (Spilocaea oleagina)',
-    confidence: 0.948,
-    severity: 'moderate',
-    recommendedTreatment: 'Spray Copper Hydroxide (250g/100L) post rain + canopy pruning.'
-  });
-});
-
-// 5. Traceability & Public Consumer Passport
-app.get('/api/traceability/public/:batchCode', (req, res) => {
-  // Public verifiable harvest metadata for QR code scans
-  res.json({
-    verified: true,
-    batchCode: req.params.batchCode,
-    product: 'SOL Reserve Extra Virgin Olive Oil',
-    acidity: '0.18%',
-    polyphenols: '540 mg/kg'
-  });
-});
-
-app.listen(5000, () => console.log('🌾 SOL Ecosystem API online on port 5000'));`;
+app.listen(PORT, async () => {
+  await db.checkConnection();
+  console.log(\`🌾 SOL Ecosystem API online on port \${PORT} (Mila, Algeria)\`);
+});`;
 
   const FLUTTER_DART_SNIPPET = `// ============================================================================
 // SOL ECOSYSTEM - FLUTTER MOBILE APP (Material 3 + Clean Architecture)
