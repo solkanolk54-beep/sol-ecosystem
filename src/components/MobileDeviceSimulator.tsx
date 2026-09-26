@@ -15,6 +15,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import { Farm, Tree, LivestockAnimal, TraceabilityBatch, ToastNotificationItem } from '../types';
+import { LiveWeatherData } from '../services/weatherService';
 import { DashboardView } from './DashboardView';
 
 interface MobileDeviceSimulatorProps {
@@ -31,6 +32,9 @@ interface MobileDeviceSimulatorProps {
   activeAlert?: ToastNotificationItem | null;
   onDismissAlert?: (id: string) => void;
   onNavigateToPredictiveIrrigation?: () => void;
+  liveWeather?: LiveWeatherData | null;
+  onRefreshWeather?: () => Promise<void>;
+  isWeatherLoading?: boolean;
 }
 
 export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
@@ -47,6 +51,9 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
   activeAlert,
   onDismissAlert,
   onNavigateToPredictiveIrrigation,
+  liveWeather,
+  onRefreshWeather,
+  isWeatherLoading = false,
 }) => {
   const [activeBottomNav, setActiveBottomNav] = useState<'dashboard' | 'orchard' | 'livestock' | 'traceability'>('dashboard');
 
@@ -163,6 +170,9 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
               onTriggerTreeAlert={onTriggerTreeAlert}
               onTriggerLivestockAlert={onTriggerLivestockAlert}
               onNavigateToPredictiveIrrigation={onNavigateToPredictiveIrrigation}
+              liveWeather={liveWeather}
+              onRefreshWeather={onRefreshWeather}
+              isWeatherLoading={isWeatherLoading}
             />
           </div>
 

@@ -26,6 +26,7 @@ import {
   CloudLightning
 } from 'lucide-react';
 import { Tree, Farm, ParcelIrrigationMetrics, WeatherCondition } from '../types';
+import { LiveWeatherData, buildWeatherConditionFromLive } from '../services/weatherService';
 import {
   calculateParcelIrrigation,
   WEATHER_PRESETS,
@@ -39,6 +40,7 @@ interface PredictiveIrrigationViewProps {
   onSelectTree?: (tree: Tree) => void;
   onOpenAiScanner?: () => void;
   onShowToast: (title: string, message: string, type: 'success' | 'warning' | 'info' | 'danger') => void;
+  liveWeather?: LiveWeatherData | null;
 }
 
 export const PredictiveIrrigationView: React.FC<PredictiveIrrigationViewProps> = ({
@@ -46,7 +48,8 @@ export const PredictiveIrrigationView: React.FC<PredictiveIrrigationViewProps> =
   trees,
   onIrrigateParcel,
   onSelectTree,
-  onShowToast
+  onShowToast,
+  liveWeather
 }) => {
   // State for interactive weather scenario simulation
   const [selectedPresetId, setSelectedPresetId] = useState<string>('current_normal');
@@ -56,9 +59,15 @@ export const PredictiveIrrigationView: React.FC<PredictiveIrrigationViewProps> =
 
   // Active weather condition based on selected scenario
   const currentWeather: WeatherCondition = useMemo(() => {
+    if (selectedPresetId === 'current_normal') {
+      if (liveWeather) {
+        return buildWeatherConditionFromLive(liveWeather, DEFAULT_WEATHER_MILA);
+      }
+      return DEFAULT_WEATHER_MILA;
+    }
     const preset = WEATHER_PRESETS.find((p) => p.id === selectedPresetId);
     return preset ? preset.weather : DEFAULT_WEATHER_MILA;
-  }, [selectedPresetId]);
+  }, [selectedPresetId, liveWeather]);
 
   // Recalculate predictive metrics dynamically
   const parcelMetrics: ParcelIrrigationMetrics[] = useMemo(() => {

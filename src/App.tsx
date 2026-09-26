@@ -21,6 +21,7 @@ import {
   INITIAL_BATCHES
 } from './data/mockData';
 import { Farm, Tree, LivestockAnimal, TraceabilityBatch, ToastNotificationItem } from './types';
+import { fetchLiveMilaWeather, LiveWeatherData } from './services/weatherService';
 
 export default function App() {
   // Navigation & View Mode
@@ -29,10 +30,14 @@ export default function App() {
   >('mobile_simulator');
 
   // Application Data State
-  const [farm] = useState<Farm>(INITIAL_FARM);
+  const [farm, setFarm] = useState<Farm>(INITIAL_FARM);
   const [trees, setTrees] = useState<Tree[]>(INITIAL_TREES);
   const [livestock, setLivestock] = useState<LivestockAnimal[]>(INITIAL_LIVESTOCK);
   const [batches] = useState<TraceabilityBatch[]>(INITIAL_BATCHES);
+
+  // Live Weather State for Mila, Algeria (Real-time Open-Meteo & OpenWeatherMap)
+  const [liveWeather, setLiveWeather] = useState<LiveWeatherData | null>(null);
+  const [isWeatherLoading, setIsWeatherLoading] = useState<boolean>(false);
 
   // Modals & Drawers
   const [selectedTree, setSelectedTree] = useState<Tree | null>(null);
@@ -128,6 +133,33 @@ export default function App() {
       clearTimeout(timer2);
     };
   }, [triggerTreeAlert, triggerLivestockAlert]);
+
+  // Real-Time Weather Fetching for Mila, Algeria (Open-Meteo & OpenWeatherMap)
+  const refreshWeather = useCallback(async (showLoading = true) => {
+    if (showLoading) setIsWeatherLoading(true);
+    try {
+      const live = await fetchLiveMilaWeather();
+      setLiveWeather(live);
+      // Synchronize farm state weather string with live telemetry
+      setFarm((prev) => ({
+        ...prev,
+        weather: live.summaryBadge,
+      }));
+    } catch (err) {
+      console.error('Error fetching live weather for Mila:', err);
+    } finally {
+      if (showLoading) setIsWeatherLoading(false);
+    }
+  }, []);
+
+  // Fetch live weather on mount and periodic refresh every 10 minutes
+  useEffect(() => {
+    refreshWeather(false);
+    const interval = setInterval(() => {
+      refreshWeather(false);
+    }, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [refreshWeather]);
 
   // Agronomic Mutation: Log AI Diagnosis treatment into tree file
   const handleAddTreatmentLog = (treeId: string, condition: string, treatment: string) => {
@@ -337,6 +369,9 @@ export default function App() {
             activeAlert={toasts[0] || null}
             onDismissAlert={dismissToast}
             onNavigateToPredictiveIrrigation={() => setActiveTab('predictive_irrigation')}
+            liveWeather={liveWeather}
+            onRefreshWeather={() => refreshWeather(true)}
+            isWeatherLoading={isWeatherLoading}
           />
         )}
 
@@ -354,6 +389,9 @@ export default function App() {
             onTriggerTreeAlert={() => triggerTreeAlert()}
             onTriggerLivestockAlert={() => triggerLivestockAlert()}
             onNavigateToPredictiveIrrigation={() => setActiveTab('predictive_irrigation')}
+            liveWeather={liveWeather}
+            onRefreshWeather={() => refreshWeather(true)}
+            isWeatherLoading={isWeatherLoading}
           />
         )}
 
@@ -364,6 +402,7 @@ export default function App() {
             onIrrigateParcel={handleIrrigateParcel}
             onSelectTree={(tree) => setSelectedTree(tree)}
             onOpenAiScanner={() => setIsAiScannerOpen(true)}
+            liveWeather={liveWeather}
             onShowToast={(title, message, type) => {
               addToast({
                 type,

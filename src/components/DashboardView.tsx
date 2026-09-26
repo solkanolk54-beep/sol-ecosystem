@@ -13,9 +13,14 @@ import {
   Sun,
   AlertOctagon,
   Syringe,
-  BellRing
+  BellRing,
+  RefreshCw,
+  CloudRain,
+  Cloud,
+  Wind
 } from 'lucide-react';
 import { Farm, Tree, LivestockAnimal, TraceabilityBatch } from '../types';
+import { LiveWeatherData } from '../services/weatherService';
 
 interface DashboardViewProps {
   farm: Farm;
@@ -30,6 +35,9 @@ interface DashboardViewProps {
   onTriggerTreeAlert?: () => void;
   onTriggerLivestockAlert?: () => void;
   onNavigateToPredictiveIrrigation?: () => void;
+  liveWeather?: LiveWeatherData | null;
+  onRefreshWeather?: () => Promise<void>;
+  isWeatherLoading?: boolean;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -45,7 +53,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onTriggerTreeAlert,
   onTriggerLivestockAlert,
   onNavigateToPredictiveIrrigation,
+  liveWeather,
+  onRefreshWeather,
+  isWeatherLoading = false,
 }) => {
+  // Weather details modal state
+  const [isWeatherDetailsOpen, setIsWeatherDetailsOpen] = useState(false);
   // Filters for trees
   const [treeHealthFilter, setTreeHealthFilter] = useState<'all' | 'healthy' | 'needs_attention' | 'diseased'>('all');
   const [treeSearch, setTreeSearch] = useState('');
@@ -130,10 +143,107 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            {/* Weather Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-emerald-200 text-xs font-semibold backdrop-blur-xs mb-2">
-              <Sun className="w-3.5 h-3.5 text-amber-300" />
-              <span>{farm.weather}</span>
+            {/* Live Weather Badge (Real-Time API: Open-Meteo & OpenWeatherMap) */}
+            <div className="relative inline-block mb-2">
+              <div
+                onClick={() => setIsWeatherDetailsOpen(!isWeatherDetailsOpen)}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/20 text-emerald-100 text-xs font-semibold backdrop-blur-md border border-white/20 shadow-sm cursor-pointer transition-all"
+                title="انقر لعرض تفاصيل محطة الأرصاد بميلة"
+              >
+                {/* Live green pulse indicator */}
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A3E635]"></span>
+                </span>
+
+                {/* Dynamic weather icon */}
+                {liveWeather?.weatherIcon === 'rain' ? (
+                  <CloudRain className="w-3.5 h-3.5 text-cyan-300" />
+                ) : liveWeather?.weatherIcon === 'cloud' ? (
+                  <Cloud className="w-3.5 h-3.5 text-stone-300" />
+                ) : liveWeather?.weatherIcon === 'wind' ? (
+                  <Wind className="w-3.5 h-3.5 text-sky-300" />
+                ) : (
+                  <Sun className="w-3.5 h-3.5 text-amber-300" />
+                )}
+
+                <span className="font-extrabold text-white">
+                  {liveWeather ? liveWeather.summaryBadge : farm.weather}
+                </span>
+
+                <span className="text-[10px] font-bold bg-[#0F5132]/80 text-[#A3E635] px-1.5 py-0.2 rounded-full border border-emerald-500/40">
+                  {liveWeather?.isLive ? 'مباشر' : 'تحديث حي'}
+                </span>
+
+                {onRefreshWeather && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRefreshWeather();
+                    }}
+                    className={`p-0.5 rounded-full hover:bg-white/20 transition-all cursor-pointer ${
+                      isWeatherLoading ? 'animate-spin text-amber-300' : 'text-emerald-200'
+                    }`}
+                    title="تحديث بيانات الطقس الآن"
+                    aria-label="تحديث بيانات الطقس"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Expandable Live Weather Popover */}
+              {isWeatherDetailsOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setIsWeatherDetailsOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-[#16271D]/95 border border-emerald-600/80 rounded-2xl shadow-2xl p-3.5 z-40 text-right backdrop-blur-md text-xs animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between border-b border-emerald-700/60 pb-2 mb-2">
+                      <div className="flex items-center gap-1.5 font-bold text-white">
+                        <Sun className="w-4 h-4 text-amber-400" />
+                        <span>محطة ميلة المباشرة (حوض بني هارون)</span>
+                      </div>
+                      <span className="text-[10px] text-emerald-300 font-mono">
+                        {liveWeather?.timestamp || 'الآن'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-stone-200 mb-2">
+                      <div className="bg-black/20 p-2 rounded-xl">
+                        <span className="text-stone-400 text-[10px] block">الحرارة المحسوسة</span>
+                        <span className="font-bold text-white font-mono">{liveWeather?.feelsLikeC ?? 25.3}° م</span>
+                      </div>
+                      <div className="bg-black/20 p-2 rounded-xl">
+                        <span className="text-stone-400 text-[10px] block">الرطوبة النسبية</span>
+                        <span className="font-bold text-white font-mono">{liveWeather?.humidityPct ?? 53}%</span>
+                      </div>
+                      <div className="bg-black/20 p-2 rounded-xl">
+                        <span className="text-stone-400 text-[10px] block">سرعة الرياح</span>
+                        <span className="font-bold text-white font-mono">{liveWeather?.windSpeedKmh ?? 15} كم/سا</span>
+                      </div>
+                      <div className="bg-black/20 p-2 rounded-xl">
+                        <span className="text-stone-400 text-[10px] block">البخر المرجعي ET0</span>
+                        <span className="font-bold text-white font-mono">{liveWeather?.et0MmDay ?? 4.1} مم/يوم</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] text-stone-400 pt-1 border-t border-emerald-800">
+                      <span>المصدر: {liveWeather?.source || 'Open-Meteo Live API'}</span>
+                      {onRefreshWeather && (
+                        <button
+                          onClick={() => onRefreshWeather()}
+                          className="text-emerald-300 hover:text-white font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <RefreshCw className={`w-3 h-3 ${isWeatherLoading ? 'animate-spin' : ''}`} />
+                          <span>تحديث الآن</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Farm Name & Header */}
