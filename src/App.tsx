@@ -329,7 +329,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F7F4] flex flex-col font-sans text-stone-900 antialiased selection:bg-emerald-200 selection:text-emerald-900">
+    <div className="min-h-screen bg-[#F4F7F4] dark:bg-[#08120B] flex flex-col font-sans text-stone-900 dark:text-stone-100 antialiased selection:bg-emerald-200 selection:text-emerald-900 transition-colors duration-200">
       {/* Toast Notification Container (RTL Floating Alerts) */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 

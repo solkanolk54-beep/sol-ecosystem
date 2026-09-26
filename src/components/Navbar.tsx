@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sprout, Smartphone, Monitor, Database, Server, Code, Sparkles, Bell, AlertOctagon, Syringe, CheckCircle2, Droplets } from 'lucide-react';
 import { ToastNotificationItem } from '../types';
+import { ThemeToggle } from './ThemeToggle';
 
 interface NavbarProps {
   activeTab: 'mobile_simulator' | 'full_dashboard' | 'predictive_irrigation' | 'step1_sql' | 'step2_express' | 'step3_flutter';
@@ -28,7 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   return (
-    <header dir="rtl" className="sticky top-0 z-40 bg-[#0F5132] text-white border-b border-[#165B37] shadow-md font-sans">
+    <header dir="rtl" className="sticky top-0 z-40 bg-[#0F5132] dark:bg-[#072416] text-white border-b border-[#165B37] dark:border-emerald-950 shadow-md font-sans transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Platform Name */}
@@ -119,8 +120,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </nav>
 
-          {/* Quick AI Action & Farm Status & Notification Bell */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Quick AI Action & Farm Status & Notification Bell & Theme Toggle */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* Field Night Inspection Mode Toggle */}
+            <ThemeToggle variant="icon" />
+
             {/* Notification Bell with Dropdown */}
             <div className="relative">
               <button
@@ -312,6 +316,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             تطبيق Flutter
           </button>
+          <div className="shrink-0 pr-1">
+            <ThemeToggle variant="badge" />
+          </div>
         </div>
       </div>
     </header>
