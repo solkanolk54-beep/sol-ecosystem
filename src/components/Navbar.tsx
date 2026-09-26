@@ -105,7 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs text-emerald-100">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Cap Bon 142.5 Ha</span>
+              <span>Mila, DZ 142.5 Ha</span>
             </div>
           </div>
         </div>

@@ -394,7 +394,7 @@ class DashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
               Text('142.5 Hectares', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-              Text('Cap Bon Basin', style: TextStyle(color: Color(0xFFC7E8CA))),
+              Text('Mila, Algeria', style: TextStyle(color: Color(0xFFC7E8CA))),
             ],
           ),
           const Divider(color: Colors.white24, height: 24),

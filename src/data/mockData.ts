@@ -5,12 +5,12 @@ export const INITIAL_FARM: Farm = {
   name: 'SOL Green Valley Agro-Estate',
   code: 'SOL-FARM-01',
   areaHectares: 142.5,
-  latitude: 36.8065,
-  longitude: 10.1815,
-  region: 'Cap Bon Mediterranean Basin',
-  country: 'Tunisia',
-  soilType: 'Rich Terra Rossa & Silty Loam',
-  irrigationSource: 'Solar Deep Well & Drip System',
+  latitude: 36.4503,
+  longitude: 6.2644,
+  region: 'Mila Agro-Industrial Basin',
+  country: 'Algeria',
+  soilType: 'Rich Silty Loam & Agricultural Alluvial Soil',
+  irrigationSource: 'Beni Haroun Basin & Solar Drip Network',
   totalTrees: 4250,
   healthyTrees: 3820,
   needsAttentionTrees: 320,
@@ -19,7 +19,7 @@ export const INITIAL_FARM: Farm = {
   cattleCount: 220,
   sheepCount: 460,
   avgSoilMoisture: '38.4%',
-  weather: '24°C Mediterranean Sunny, NW 12km/h'
+  weather: '24°C Mediterranean Sunny'
 };
 
 export const INITIAL_TREES: Tree[] = [

@@ -15,7 +15,9 @@ class FarmStateProvider extends ChangeNotifier {
   final Map<String, dynamic> _farmData = {
     'name': 'SOL Green Valley Estate',
     'code': 'SOL-FARM-01',
-    'location': 'Cap Bon Mediterranean Basin',
+    'location': 'Mila, Algeria',
+    'region': 'Mila Agro-Industrial Basin, Algeria',
+    'soilType': 'Rich Silty Loam & Agricultural Alluvial Soil',
     'areaHectares': 142.5,
     'totalTrees': 4250,
     'healthyTrees': 3820,
@@ -25,7 +27,7 @@ class FarmStateProvider extends ChangeNotifier {
     'cattleCount': 220,
     'sheepCount': 460,
     'avgSoilMoisture': '38.4%',
-    'weather': '24°C Sunny, Mild Wind (NW 12km/h)'
+    'weather': '24°C Mediterranean Sunny'
   };
 
   Map<String, dynamic> get farmData => _farmData;
@@ -191,30 +193,50 @@ class DashboardScreen extends StatelessWidget {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'AGRI-HOLDING OVERVIEW',
-                    style: TextStyle(
-                      color: Color(0xFFC7E8CA),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.0,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on_rounded, color: Color(0xFFC7E8CA), size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${data['location']} • ${data['region']}',
+                          style: const TextStyle(
+                            color: Color(0xFFC7E8CA),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${data['areaHectares']} Hectares',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
+                    const SizedBox(height: 4),
+                    Text(
+                      '${data['areaHectares']} Ha Estate',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 2),
+                    Text(
+                      'Soil: ${data['soilType']}',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.85),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
@@ -222,12 +244,13 @@ class DashboardScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.wb_sunny_rounded, color: Colors.amberAccent, size: 16),
                     const SizedBox(width: 6),
                     Text(
-                      '24°C Mediterranean',
-                      style: TextStyle(color: Colors.white.withOpacity(0.95), fontSize: 12),
+                      '${data['weather']}',
+                      style: TextStyle(color: Colors.white.withOpacity(0.95), fontSize: 11, fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
