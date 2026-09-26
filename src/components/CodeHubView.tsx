@@ -11,6 +11,7 @@ export const CodeHubView: React.FC<CodeHubViewProps> = ({ initialTab = 'step1' }
   const [apiEndpoint, setApiEndpoint] = useState<string>('GET /api/trees');
   const [apiResponse, setApiResponse] = useState<string | null>(null);
   const [isExecutingApi, setIsExecutingApi] = useState<boolean>(false);
+  const [selectedFlutterFile, setSelectedFlutterFile] = useState<'main' | 'dashboard'>('main');
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -302,55 +303,355 @@ app.listen(PORT, async () => {
   console.log(\`🌾 SOL Ecosystem API online on port \${PORT} (Mila, Algeria)\`);
 });`;
 
-  const FLUTTER_DART_SNIPPET = `// ============================================================================
-// SOL ECOSYSTEM - FLUTTER MOBILE APP (Material 3 + Clean Architecture)
-// File: lib/features/farm_overview/presentation/screens/dashboard_screen.dart (Step 3)
+  const FLUTTER_MAIN_DART_SNIPPET = `// ============================================================================
+// SOL ECOSYSTEM - SMART AGRITECH & BIO-FARMING PLATFORM
+// File: lib/main.dart
+// Features: Full Arabic Localization (Algerian Context: Mila) & RTL Architecture
 // ============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'screens/dashboard_screen.dart';
 
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    // 1. Wrap the app with ChangeNotifierProvider using FarmStateProvider
+    ChangeNotifierProvider(
+      create: (_) => FarmStateProvider()..loadFarmData(),
+      child: const SolEcosystemApp(),
+    ),
+  );
+}
+
+class SolEcosystemApp extends StatelessWidget {
+  const SolEcosystemApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Access FarmStateProvider to observe locale and RTL state changes
+    final farmProvider = context.watch<FarmStateProvider>();
+    final isArabic = farmProvider.isArabic;
+
+    // SOL Brand Color Palette (Algerian Bio-Agriculture):
+    // Primary Dark Green: #0F5132 (Olive groves & vegetative health)
+    // Secondary Earthy Wood: #8B4513 (Mila fertile silty-loam soil)
+    // Tertiary Precision Blue: #1E3A8A (IoT telemetry & QR traceability)
+    final ColorScheme solColorScheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF0F5132),
+      primary: const Color(0xFF0F5132),
+      onPrimary: Colors.white,
+      secondary: const Color(0xFF8B4513),
+      onSecondary: Colors.white,
+      tertiary: const Color(0xFF1E3A8A),
+      onTertiary: Colors.white,
+      surface: const Color(0xFFF9FBF8),
+      onSurface: const Color(0xFF1B2E20),
+      surfaceContainerHighest: const Color(0xFFE8EFE8),
+      error: const Color(0xFFB71C1C),
+      onError: Colors.white,
+      brightness: Brightness.light,
+    );
+
+    // 4. Appropriate Typography Suited for Arabic Text (Algerian Agronomic Context)
+    // Uses Google Fonts Cairo with enhanced line height and letter spacing for Arabic legibility
+    final TextTheme baseTextTheme = ThemeData.light().textTheme;
+    final TextTheme arabicTextTheme = GoogleFonts.cairoTextTheme(baseTextTheme).copyWith(
+      displayLarge: GoogleFonts.cairo(
+        fontSize: 32,
+        fontWeight: FontWeight.w800,
+        height: 1.4,
+        letterSpacing: 0,
+        color: const Color(0xFF1B2E20),
+      ),
+      headlineMedium: GoogleFonts.cairo(
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        height: 1.4,
+        letterSpacing: 0,
+        color: const Color(0xFF1B2E20),
+      ),
+      titleLarge: GoogleFonts.cairo(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        height: 1.45,
+        letterSpacing: 0,
+        color: const Color(0xFF1B2E20),
+      ),
+      titleMedium: GoogleFonts.cairo(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        height: 1.4,
+        color: const Color(0xFF1B2E20),
+      ),
+      bodyLarge: GoogleFonts.cairo(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        height: 1.55,
+        color: const Color(0xFF2E3D30),
+      ),
+      bodyMedium: GoogleFonts.cairo(
+        fontSize: 13,
+        fontWeight: FontWeight.w400,
+        height: 1.5,
+        color: const Color(0xFF4A5568),
+      ),
+      labelLarge: GoogleFonts.cairo(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0,
+        color: Colors.white,
+      ),
+      labelMedium: GoogleFonts.cairo(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+        color: const Color(0xFF64748B),
+      ),
+    );
+
+    final TextTheme englishTextTheme = GoogleFonts.interTextTheme(baseTextTheme).copyWith(
+      titleLarge: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold),
+      bodyLarge: GoogleFonts.inter(fontSize: 14, height: 1.5),
+    );
+
+    return MaterialApp(
+      // Localized application title
+      title: isArabic ? 'منظومة SOL الرقمية' : 'SOL Ecosystem',
+      debugShowCheckedModeBanner: false,
+
+      // 2. Configure MaterialApp:
+      // Dynamically select locale based on farmProvider.isArabic
+      // Defaults to Locale('ar', 'DZ') for Algerian agronomic context (Mila basin)
+      locale: isArabic ? const Locale('ar', 'DZ') : const Locale('en', 'US'),
+
+      // Supported Locales (Arabic Algeria & English US)
+      supportedLocales: const [
+        Locale('ar', 'DZ'), // Arabic (Algeria - Mila Basin)
+        Locale('en', 'US'), // English (International fallback)
+      ],
+
+      // Required Flutter Localization Delegates for Material, Widgets & Cupertino
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+
+      // Material 3 Theme with Algerian Agronomic Visual Identity
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: solColorScheme,
+        scaffoldBackgroundColor: const Color(0xFFF6F8F5),
+        textTheme: isArabic ? arabicTextTheme : englishTextTheme,
+        appBarTheme: AppBarTheme(
+          backgroundColor: const Color(0xFF0F5132),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: false,
+          titleTextStyle: (isArabic ? GoogleFonts.cairo : GoogleFonts.inter)(
+            fontSize: 19,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+          ),
+        ),
+        cardTheme: CardTheme(
+          color: Colors.white,
+          elevation: 1.5,
+          shadowColor: Colors.black.withOpacity(0.06),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            textStyle: (isArabic ? GoogleFonts.cairo : GoogleFonts.inter)(
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ),
+
+      // Main Farm & Orchard Dashboard
+      home: const DashboardScreen(),
+    );
+  }
+}
+`;
+
+  const FLUTTER_DART_SNIPPET = `// ============================================================================
+// SOL ECOSYSTEM - FLUTTER MOBILE APP (Material 3 + Clean Architecture)
+// File: lib/screens/dashboard_screen.dart (RTL & Arabic Localization)
+// ============================================================================
+
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../../core/services/api_service.dart';
+
+/// State Management Provider with Arabic Localization & RTL Layout State
+class FarmStateProvider extends ChangeNotifier {
+  final ApiService _apiService;
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
+
+  // Language & RTL State (Defaults to Arabic for Algerian Agronomic context)
+  bool _isArabic = true;
+  bool get isArabic => _isArabic;
+  TextDirection get textDirection => _isArabic ? TextDirection.rtl : TextDirection.ltr;
+
+  void toggleLanguage() {
+    _isArabic = !_isArabic;
+    notifyListeners();
+  }
+
+  // Arabic String Constants Dictionary (Algerian Agronomic Context - Mila Basin)
+  static const Map<String, String> arabicStrings = {
+    'appTitle': 'منظومة SOL الرقمية',
+    'appSubtitle': 'مستثمرة ميلة الفلاحية • حوض بني هارون',
+    'locationSubtitle': 'ميلة، الجزائر • حوض بني هارون',
+    'estateAreaLabel': 'المساحة الإجمالية: 142.5 هكتار',
+    'soilType': 'تربة طميية فيضية غنية وخصبة (حوض ميلة)',
+    'weatherStatus': '24° م مشمس، شمالي غربي 12 كم/سا',
+    'oliveTrees': 'أشجار الزيتون',
+    'livestock': 'الثروة الحيوانية',
+    'soilMoisture': 'رطوبة التربة',
+    'aiScanBannerTitle': 'الفحص السريع بالذكاء الاصطناعي',
+    'aiScanSubtitle': 'التقط صورة للورقة للكشف المبكر عن عين الطاووس والآفات',
+    'scanButton': 'فحص فوري',
+    'analyzingText': 'جارٍ فحص أمراض الأوراق وتحليل العينة بالذكاء الاصطناعي...',
+    'orchardModuleHeader': 'حالة الأشجار والمحاصيل (حقول الزيتون)',
+    'orchardModuleSubtitle': 'حقول الزيتون (حوض ميلة الزراعي)',
+    'canopyVigor': 'مؤشر حيوية المجموع الخضري والصحة',
+    'treeStatusBreakdown': 'سليمة: 3820 | تحتاج عناية: 320 | مصابة: 110',
+    'statusHealthy': 'سليمة',
+    'statusAttention': 'تحتاج عناية',
+    'statusDiseased': 'مصابة',
+    'livestockModuleHeader': 'سجل الثروة الحيوانية (الأبقار والأغنام)',
+    'livestockModuleSubtitle': 'تتبع القطيع بالرقمنة وأطواق RFID',
+    'cattleHerd': 'قطيع الأبقار',
+    'cattleCount': '220 رأس',
+    'cattleBreeds': 'سلالة هولشتاين ومونبليارد',
+    'sheepFlock': 'قطيع الأغنام',
+    'sheepCount': '460 رأس',
+    'sheepBreeds': 'سلالة أولاد جلال الأصيلة',
+    'vaccineNotice': 'تنبيه بيطري: جرعة التلقيح المعززة ضد الحمى القلاعية لـ 42 عجلة مبرمجة في 25 أوت.',
+    'traceabilityBanner': 'جواز السفر الرقمي للمنتج (تتبع الجودة QR)',
+    'traceabilitySubtitle': 'شهادات المنشأ الرقمية لزيت الزيتون البكر الممتاز ولحوم أولاد جلال المسجلة.',
+    'syncTooltip': 'مزامنة مع واجهة برمجة التطبيقات (API)',
+    'syncing': 'جارٍ جلب البيانات الحية من خادم REST API...',
+    'offlineWarning': 'وضع عدم الاتصال مفعل - البيانات المخزنة محلياً',
+    'selectSpecimenSource': 'اختر مصدر عينة الفحص',
+    'cameraOption': 'التقاط صورة عبر الكاميرا',
+    'galleryOption': 'اختيار من معرض الصور',
+    'aiDiagnosticResult': 'نتيجة التشخيص بالذكاء الاصطناعي',
+    'matchPercentage': 'نسبة التطابق',
+    'observedSymptoms': 'الأعراض المشخصة:',
+    'treatmentProtocol': 'البروتوكول العلاجي الموصى به:',
+    'acknowledgeButton': 'اعتماد البروتوكول وإدراجه بالسجل الصحي للمزرعة',
+    'dossierSuccessMessage': 'تم تسجيل البروتوكول العلاجي بنجاح في السجل الصحي للمزرعة.',
+    'diagnosticFailed': 'تعذر إتمام الفحص بالذكاء الاصطناعي: ',
+    'soilLabel': 'التربة:',
+  };
+
+  String tr(String key) => _isArabic ? (arabicStrings[key] ?? key) : key;
+
+  Map<String, dynamic> _farmData = {
+    'name': 'مستثمرة ميلة الفلاحية - حوض بني هارون',
+    'locationSubtitle': 'ميلة، الجزائر • حوض بني هارون',
+    'estateAreaLabel': 'المساحة الإجمالية: 142.5 هكتار',
+    'treeCount': 4250,
+    'healthyTreeCount': 3820,
+    'attentionTreeCount': 320,
+    'diseasedTreeCount': 110,
+    'livestockCount': 680,
+    'cattleCount': 220,
+    'sheepCount': 460,
+    'avgSoilMoisture': '38.4%',
+  };
+  Map<String, dynamic> get farmData => _farmData;
+
+  FarmStateProvider({ApiService? apiService})
+      : _apiService = apiService ?? ApiService();
+
+  Future<void> loadFarmData() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final liveFarm = await _apiService.fetchFarmOverview('SOL-FARM-DZ-MILA-01');
+      _farmData = { ..._farmData, ...liveFarm };
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>> sendImageForAiDiagnosis(String base64Image) async {
+    return await _apiService.diagnoseLeaf(imageBase64: base64Image, cropSpecies: 'Olive');
+  }
+}
+
+/// Dashboard Screen with Strict RTL Directionality Wrapper & Material 3 Styling
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7F4),
-      appBar: AppBar(
-        title: const Text('SOL ECOSYSTEM', style: TextStyle(fontWeight: FontWeight.w800)),
-        backgroundColor: const Color(0xFF0F5132), // Dark Green Brand Color
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // 1. Farm Overview Header & Weather
-            _buildFarmOverviewCard(),
-            const SizedBox(height: 16),
+    final farmProvider = context.watch<FarmStateProvider>();
+    final tr = farmProvider.tr;
 
-            // 2. Quick AI Scan Banner (Camera Prompt)
-            _buildQuickAiScanBanner(context),
-            const SizedBox(height: 20),
-
-            // 3. Smart Orchard Health Breakdown (Module A)
-            _buildOrchardHealthCard(),
-            const SizedBox(height: 20),
-
-            // 4. Livestock Summary (Module B: Cattle & Sheep)
-            _buildLivestockSummaryCard(),
-            const SizedBox(height: 20),
-
-            // 5. Traceability Quick Access (Module C)
-            _buildTraceabilityBanner(),
+    // Strict RTL Layout: Wrap entire Scaffold in Directionality(textDirection: RTL)
+    return Directionality(
+      textDirection: farmProvider.textDirection,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF4F7F4),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0F5132),
+          foregroundColor: Colors.white,
+          title: Text(tr('appTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
+          actions: [
+            TextButton(
+              onPressed: () => farmProvider.toggleLanguage(),
+              child: Text(farmProvider.isArabic ? 'English' : 'عربي', style: const TextStyle(color: Colors.white)),
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded),
+              onPressed: () => farmProvider.loadFarmData(),
+            ),
           ],
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              _buildFarmOverviewCard(context, farmProvider),
+              const SizedBox(height: 16),
+              _buildQuickAiScanBanner(context, farmProvider),
+              const SizedBox(height: 20),
+              _buildOrchardHealthCard(context, farmProvider),
+              const SizedBox(height: 20),
+              _buildLivestockSummaryCard(context, farmProvider),
+              const SizedBox(height: 20),
+              _buildTraceabilityBanner(context, farmProvider),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildFarmOverviewCard() {
+  Widget _buildFarmOverviewCard(BuildContext context, FarmStateProvider provider) {
+    final tr = provider.tr;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -361,17 +662,20 @@ class DashboardScreen extends StatelessWidget {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text('142.5 Hectares', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-              Text('Mila, Algeria', style: TextStyle(color: Color(0xFFC7E8CA))),
+            children: [
+              Text(tr('estateAreaLabel'), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(tr('weatherStatus'), style: const TextStyle(color: Colors.white70, fontSize: 11)),
             ],
           ),
+          const SizedBox(height: 12),
+          Text(tr('locationSubtitle'), style: const TextStyle(color: Color(0xFFC7E8CA), fontSize: 13)),
           const Divider(color: Colors.white24, height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text('Olive Trees: 4,250', style: TextStyle(color: Colors.white)),
-              Text('Livestock: 680', style: TextStyle(color: Colors.white)),
+            children: [
+              Text('\${tr('oliveTrees')}: 4,250', style: const TextStyle(color: Colors.white)),
+              Text('\${tr('livestock')}: 680', style: const TextStyle(color: Colors.white)),
+              Text('\${tr('soilMoisture')}: 38.4%', style: const TextStyle(color: Colors.white)),
             ],
           )
         ],
@@ -379,65 +683,83 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickAiScanBanner(BuildContext context) {
+  Widget _buildQuickAiScanBanner(BuildContext context, FarmStateProvider provider) {
+    final tr = provider.tr;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF8B4513).withOpacity(0.3)), // Earthy Wood
+        border: Border.all(color: const Color(0xFF8B4513).withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.camera_alt, color: Color(0xFF8B4513), size: 32),
+          const Icon(Icons.document_scanner_rounded, color: Color(0xFF8B4513), size: 30),
           const SizedBox(width: 12),
-          const Expanded(
-            child: Text('Quick AI Leaf & Fruit Scan\\nDiagnose peacock spot & anthracnose instantly'),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(tr('aiScanBannerTitle'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(tr('aiScanSubtitle'), style: const TextStyle(fontSize: 11, color: Colors.grey)),
+              ],
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B4513), foregroundColor: Colors.white),
             onPressed: () {},
-            child: const Text('Scan'),
+            child: Text(tr('scanButton')),
           )
         ],
       ),
     );
   }
 
-  Widget _buildOrchardHealthCard() {
+  Widget _buildOrchardHealthCard(BuildContext context, FarmStateProvider provider) {
+    final tr = provider.tr;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text('Orchard Canopy Vigor: 90% Healthy (3,820) | 7.5% Attention (320) | 2.5% Diseased (110)'),
+          children: [
+            Text(tr('orchardModuleHeader'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            const SizedBox(height: 6),
+            Text(tr('treeStatusBreakdown'), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF0F5132))),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLivestockSummaryCard() {
+  Widget _buildLivestockSummaryCard(BuildContext context, FarmStateProvider provider) {
+    final tr = provider.tr;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          children: const [
-            Text('Herd Status: 220 Cattle (Holstein/Angus) | 460 Sheep (Awassi Heritage)'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(tr('livestockModuleHeader'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            const SizedBox(height: 6),
+            Text('\${tr('cattleHerd')}: 220 (\${tr('cattleBreeds')}) | \${tr('sheepFlock')}: 460 (\${tr('sheepBreeds')})'),
+            const SizedBox(height: 6),
+            Text(tr('vaccineNotice'), style: const TextStyle(fontSize: 11, color: Colors.grey)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTraceabilityBanner() {
+  Widget _buildTraceabilityBanner(BuildContext context, FarmStateProvider provider) {
+    final tr = provider.tr;
     return Card(
       color: const Color(0xFF1E3A8A).withOpacity(0.08),
-      child: const ListTile(
-        leading: Icon(Icons.qr_code_2, color: Color(0xFF1E3A8A)),
-        title: Text('Farm-to-Fork QR Passport Generator'),
-        subtitle: Text('Generate tamper-proof consumer seals'),
+      child: ListTile(
+        leading: const Icon(Icons.qr_code_2, color: Color(0xFF1E3A8A)),
+        title: Text(tr('traceabilityBanner'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+        subtitle: Text(tr('traceabilitySubtitle'), style: const TextStyle(fontSize: 11)),
+        trailing: Icon(provider.isArabic ? Icons.arrow_back_ios_rounded : Icons.arrow_forward_ios_rounded, size: 14),
       ),
     );
   }
@@ -734,29 +1056,60 @@ class DashboardScreen extends StatelessWidget {
 
           {/* Flutter Code Viewer */}
           <div className="bg-[#111827] rounded-2xl overflow-hidden shadow-xl border border-gray-800">
+            {/* File Switcher Tabs */}
             <div className="flex items-center justify-between px-6 py-3.5 bg-gray-900 border-b border-gray-800 text-xs">
-              <span className="font-mono text-amber-400 font-bold">
-                lib/features/farm_overview/presentation/screens/dashboard_screen.dart
-              </span>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => handleDownload('dashboard_screen.dart', FLUTTER_DART_SNIPPET)}
+                  onClick={() => setSelectedFlutterFile('main')}
+                  className={`px-3 py-1.5 rounded-lg font-mono font-bold transition-colors ${
+                    selectedFlutterFile === 'main'
+                      ? 'bg-emerald-800/80 text-emerald-200 border border-emerald-600'
+                      : 'bg-gray-800 text-gray-400 hover:text-white'
+                  }`}
+                >
+                  lib/main.dart (RTL & i18n App Entry)
+                </button>
+                <button
+                  onClick={() => setSelectedFlutterFile('dashboard')}
+                  className={`px-3 py-1.5 rounded-lg font-mono font-bold transition-colors ${
+                    selectedFlutterFile === 'dashboard'
+                      ? 'bg-[#8B4513] text-amber-200 border border-amber-600'
+                      : 'bg-gray-800 text-gray-400 hover:text-white'
+                  }`}
+                >
+                  lib/screens/dashboard_screen.dart
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() =>
+                    handleDownload(
+                      selectedFlutterFile === 'main' ? 'main.dart' : 'dashboard_screen.dart',
+                      selectedFlutterFile === 'main' ? FLUTTER_MAIN_DART_SNIPPET : FLUTTER_DART_SNIPPET
+                    )
+                  }
                   className="flex items-center gap-1 px-3 py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Download .dart</span>
                 </button>
                 <button
-                  onClick={() => handleCopy(FLUTTER_DART_SNIPPET, 'flutter')}
-                  className="flex items-center gap-1 px-3 py-1 rounded bg-[#8B4513] hover:bg-[#A0522D] text-white font-bold"
+                  onClick={() =>
+                    handleCopy(
+                      selectedFlutterFile === 'main' ? FLUTTER_MAIN_DART_SNIPPET : FLUTTER_DART_SNIPPET,
+                      'flutter'
+                    )
+                  }
+                  className="flex items-center gap-1 px-3 py-1 rounded bg-[#0F5132] hover:bg-[#156d43] text-white font-bold"
                 >
                   {copiedKey === 'flutter' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedKey === 'flutter' ? 'Copied!' : 'Copy Dart Code'}</span>
+                  <span>{copiedKey === 'flutter' ? 'Copied!' : `Copy ${selectedFlutterFile === 'main' ? 'main.dart' : 'dashboard.dart'}`}</span>
                 </button>
               </div>
             </div>
             <pre className="p-6 text-xs text-gray-300 font-mono overflow-x-auto leading-relaxed max-h-[600px] overflow-y-auto">
-              <code>{FLUTTER_DART_SNIPPET}</code>
+              <code>{selectedFlutterFile === 'main' ? FLUTTER_MAIN_DART_SNIPPET : FLUTTER_DART_SNIPPET}</code>
             </pre>
           </div>
         </div>

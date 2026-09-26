@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   Smartphone,
-  Maximize2,
-  Minimize2,
   Wifi,
   Battery,
   Signal,
@@ -10,9 +8,7 @@ import {
   Trees,
   Activity,
   QrCode,
-  Camera,
-  Sparkles,
-  RefreshCw
+  Camera
 } from 'lucide-react';
 import { Farm, Tree, LivestockAnimal, TraceabilityBatch } from '../types';
 import { DashboardView } from './DashboardView';
@@ -45,9 +41,9 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
       {/* Simulation Info Pill */}
       <div className="mb-4 flex items-center gap-2 bg-emerald-950/80 border border-emerald-800/80 text-emerald-200 text-xs px-4 py-1.5 rounded-full shadow-xs">
         <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
-        <span className="font-semibold">Flutter Material 3 Live Mobile Simulator (Pixel 8 / iPhone 15 Pro)</span>
+        <span className="font-semibold">محاكي تطبيق Flutter المباشر (Pixel 8 / iPhone 15 Pro) • Material 3 RTL</span>
         <span className="text-[10px] bg-emerald-800 text-white px-2 py-0.2 rounded-full font-mono">
-          lib/main.dart
+          lib/main.dart (عربي / RTL)
         </span>
       </div>
 
@@ -59,8 +55,8 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-900/60"></div>
         </div>
 
-        {/* Screen Display Container */}
-        <div className="relative bg-[#F4F7F4] text-stone-900 rounded-[38px] overflow-hidden flex flex-col h-[740px] shadow-inner select-none">
+        {/* Screen Display Container (RTL Layout) */}
+        <div dir="rtl" className="relative bg-[#F4F7F4] text-stone-900 rounded-[38px] overflow-hidden flex flex-col h-[740px] shadow-inner select-none text-right font-sans">
           {/* Status Bar */}
           <div className="pt-2 px-6 pb-1 bg-[#0F5132] text-white flex items-center justify-between text-[11px] font-semibold z-20">
             <span>09:41</span>
@@ -77,16 +73,16 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
               <div className="p-1.5 rounded-lg bg-white/10 text-[#A3E635]">
                 <Trees className="w-5 h-5" />
               </div>
-              <div>
-                <div className="font-black text-xs tracking-wider">SOL ECOSYSTEM</div>
-                <div className="text-[10px] text-emerald-200 leading-none">Cap Bon Agro-Estate</div>
+              <div className="text-right">
+                <div className="font-black text-xs tracking-wide">منظومة SOL الرقمية</div>
+                <div className="text-[10px] text-emerald-200 leading-none">ميلة، الجزائر • حوض بني هارون</div>
               </div>
             </div>
 
             <button
               onClick={onOpenAiScanner}
               className="p-1.5 rounded-full bg-[#8B4513] text-white hover:bg-[#A0522D] transition-colors shadow-xs"
-              title="Quick AI Scan"
+              title="فحص فوري بالذكاء الاصطناعي"
             >
               <Camera className="w-4 h-4" />
             </button>
@@ -116,7 +112,7 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
               }`}
             >
               <Home className="w-4 h-4" />
-              <span>Home</span>
+              <span>الرئيسية</span>
             </button>
 
             <button
@@ -126,7 +122,7 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
               }`}
             >
               <Trees className="w-4 h-4" />
-              <span>Orchard</span>
+              <span>البستان</span>
             </button>
 
             {/* Central Floating AI Camera Action */}
@@ -137,7 +133,7 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
               <div className="w-11 h-11 rounded-full bg-[#8B4513] text-white flex items-center justify-center shadow-md border-2 border-white">
                 <Camera className="w-5 h-5 text-amber-200" />
               </div>
-              <span className="text-[9px] text-[#8B4513] font-bold mt-0.5">AI Scan</span>
+              <span className="text-[9px] text-[#8B4513] font-bold mt-0.5">فحص ذكي</span>
             </button>
 
             <button
@@ -147,17 +143,17 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
               }`}
             >
               <Activity className="w-4 h-4" />
-              <span>Livestock</span>
+              <span>المواشي</span>
             </button>
 
             <button
-              onClick={onOpenTraceability}
+              onClick={() => setActiveBottomNav('traceability')}
               className={`flex flex-col items-center gap-0.5 ${
                 activeBottomNav === 'traceability' ? 'text-[#0F5132] font-bold' : 'hover:text-stone-800'
               }`}
             >
               <QrCode className="w-4 h-4" />
-              <span>Passport</span>
+              <span>جواز الجودة</span>
             </button>
           </div>
 

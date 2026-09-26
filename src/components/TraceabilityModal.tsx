@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, QrCode, ShieldCheck, MapPin, Award, CheckCircle2, Copy, Check, ExternalLink, Calendar } from 'lucide-react';
+import { X, QrCode, ShieldCheck, Award, CheckCircle2, Copy, Check } from 'lucide-react';
 import { TraceabilityBatch } from '../types';
 
 interface TraceabilityModalProps {
@@ -20,7 +20,7 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
   if (!isOpen) return null;
 
   const currentBatch = batches.find((b) => b.batchCode === selectedBatchCode) || batches[0];
-  const publicUrl = `https://sol-ecosystem.agri/passport/${currentBatch.batchCode}`;
+  const publicUrl = `https://sol-ecosystem.dz/passport/${currentBatch.batchCode}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(publicUrl);
@@ -28,8 +28,31 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const getQualityParamLabel = (key: string) => {
+    switch (key) {
+      case 'acidity':
+        return 'نسبة الحموضة الحرة';
+      case 'peroxide':
+        return 'مؤشر البيروكسيد';
+      case 'polyphenols':
+        return 'البوليفينول ومضادات الأكسدة';
+      case 'sensoryProfile':
+        return 'الملف الحسي والتذوق';
+      case 'grading':
+        return 'تصنيف الجودة';
+      case 'phLevel':
+        return 'درجة الحموضة pH';
+      case 'antibioticFree':
+        return 'خلو من المضادات الحيوية';
+      case 'pastureFedDays':
+        return 'مدة الرعي الطبيعي';
+      default:
+        return key;
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-in fade-in duration-200">
+    <div dir="rtl" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-in fade-in duration-200 font-sans text-right">
       <div className="bg-white text-stone-900 w-full max-w-2xl rounded-2xl overflow-hidden border border-emerald-100 shadow-2xl flex flex-col max-h-[92vh]">
         {/* Header */}
         <div className="bg-[#1E3A8A] text-white px-6 py-4 flex items-center justify-between">
@@ -39,17 +62,17 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-base sm:text-lg flex items-center gap-2">
-                Traceability & Farm-to-Fork Module
+                جواز السفر الرقمي وتتبع الجودة (Farm-to-Fork)
                 <span className="text-[10px] bg-blue-400/20 text-blue-200 border border-blue-400/30 px-2 py-0.5 rounded-full font-mono">
-                  Module C
+                  الوحدة (ج)
                 </span>
               </h3>
-              <p className="text-xs text-blue-200">Tamper-Proof Batch QR Generator & Public Consumer Passport</p>
+              <p className="text-xs text-blue-200">مولد رمز الاستجابة السريعة QR المشفر وجواز سفر المستهلك والرقابة</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-blue-200 hover:text-white hover:bg-blue-800 transition-colors"
+            className="p-1 rounded-lg text-blue-200 hover:text-white hover:bg-blue-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -59,25 +82,25 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
         <div className="flex border-b border-stone-200 bg-stone-50 px-6 pt-3 gap-2">
           <button
             onClick={() => setActiveView('generator')}
-            className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+            className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
               activeView === 'generator'
                 ? 'border-[#1E3A8A] text-[#1E3A8A]'
                 : 'border-transparent text-stone-500 hover:text-stone-800'
             }`}
           >
             <QrCode className="w-3.5 h-3.5" />
-            <span>Batch QR Generator</span>
+            <span>مولد رمز QR للدفعة</span>
           </button>
           <button
             onClick={() => setActiveView('public_passport')}
-            className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+            className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
               activeView === 'public_passport'
                 ? 'border-[#0F5132] text-[#0F5132]'
                 : 'border-transparent text-stone-500 hover:text-stone-800'
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Public Consumer Result View</span>
+            <span>معاينة جواز السفر الرقمي للمستهلك</span>
           </button>
         </div>
 
@@ -86,13 +109,13 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
           {/* Batch Selector */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-stone-50 p-3 rounded-xl border border-stone-200">
             <div>
-              <label className="text-xs font-bold text-stone-600 block">Select Active Production Batch:</label>
-              <span className="text-xs text-stone-500">Pick certified harvest to generate customer passport</span>
+              <label className="text-xs font-bold text-stone-600 block">اختر دفعة الإنتاج النشطة:</label>
+              <span className="text-xs text-stone-500">اختر المحصول المعتمد لتوليد شهادة المنشأ</span>
             </div>
             <select
               value={selectedBatchCode}
               onChange={(e) => setSelectedBatchCode(e.target.value)}
-              className="bg-white border border-stone-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-blue-500"
+              className="bg-white border border-stone-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-blue-500 text-right"
             >
               {batches.map((b) => (
                 <option key={b.batchCode} value={b.batchCode}>
@@ -150,7 +173,7 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
                   <span className="text-[11px] font-mono font-bold text-stone-700 bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
                     {currentBatch.batchCode}
                   </span>
-                  <div className="text-[10px] text-stone-400 mt-1">ISO-22000 Certified QR Tag</div>
+                  <div className="text-[10px] text-stone-400 mt-1">رمز QR معتمد رقمياً ومحمي</div>
                 </div>
               </div>
 
@@ -158,20 +181,20 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
               <div className="flex-1 space-y-3">
                 <div>
                   <h4 className="font-extrabold text-base text-stone-900">{currentBatch.productName}</h4>
-                  <p className="text-xs text-stone-500">{currentBatch.variety} • Single Estate Batch</p>
+                  <p className="text-xs text-stone-500">{currentBatch.variety} • دفعة إنتاج المستثمرة</p>
                 </div>
 
                 <div className="space-y-1.5 text-xs text-stone-600 bg-white p-3 rounded-xl border border-stone-200">
                   <div className="flex justify-between">
-                    <span className="text-stone-400">Harvest Date:</span>
+                    <span className="text-stone-400">تاريخ الجني:</span>
                     <span className="font-semibold">{currentBatch.harvestDate}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-stone-400">Packaging:</span>
+                    <span className="text-stone-400">التعبئة والمعالجة:</span>
                     <span className="font-semibold">{currentBatch.processingDate.split('(')[0]}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-stone-400">Batch Volume:</span>
+                    <span className="text-stone-400">حجم الدفعة:</span>
                     <span className="font-semibold">{currentBatch.quantity}</span>
                   </div>
                 </div>
@@ -182,20 +205,20 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
                     type="text"
                     readOnly
                     value={publicUrl}
-                    className="bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs text-stone-600 w-full font-mono select-all"
+                    className="bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs text-stone-600 w-full font-mono select-all text-left"
                   />
                   <button
                     onClick={handleCopyLink}
-                    className="p-2 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors"
-                    title="Copy URL"
+                    className="p-2 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors cursor-pointer"
+                    title="نسخ الرابط"
                   >
                     {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                   </button>
                   <button
                     onClick={() => setActiveView('public_passport')}
-                    className="px-3 py-1.5 rounded-lg bg-[#0F5132] hover:bg-[#165B37] text-white text-xs font-bold whitespace-nowrap transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-[#0F5132] hover:bg-[#165B37] text-white text-xs font-bold whitespace-nowrap transition-colors cursor-pointer"
                   >
-                    Preview Passport
+                    معاينة الجواز
                   </button>
                 </div>
               </div>
@@ -207,12 +230,11 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
               <div className="text-center space-y-1 border-b border-emerald-100 pb-4">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>SOL Ecosystem • Certified Authentic</span>
+                  <span>منظومة SOL الرقمية • شهادة منشأ وجودة أصلية</span>
                 </div>
                 <h3 className="font-black text-xl text-stone-900 pt-2">{currentBatch.productName}</h3>
                 <p className="text-xs text-stone-600">
-                  Origin: {currentBatch.origin} (Lat: {currentBatch.farmCoordinates.lat}, Lng:{' '}
-                  {currentBatch.farmCoordinates.lng})
+                  المنشأ: {currentBatch.origin} (خط العرض: {currentBatch.farmCoordinates.lat}، خط الطول: {currentBatch.farmCoordinates.lng})
                 </p>
               </div>
 
@@ -220,12 +242,12 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-900 mb-3 flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-[#0F5132]" />
-                  <span>Certified Laboratory Quality Parameters</span>
+                  <span>معايير الجودة والتحاليل المخبرية المعتمدة</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {Object.entries(currentBatch.qualityParameters).map(([key, val]) => (
                     <div key={key} className="bg-white p-3 rounded-xl border border-emerald-200/60 shadow-xs">
-                      <div className="text-[11px] text-stone-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}</div>
+                      <div className="text-[11px] text-stone-500">{getQualityParamLabel(key)}</div>
                       <div className="text-sm font-bold text-stone-800 mt-0.5">{val}</div>
                     </div>
                   ))}
@@ -236,7 +258,7 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
               <div className="bg-emerald-900 text-white rounded-xl p-4 space-y-2">
                 <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Single-Estate Origin Certifications:</span>
+                  <span>شهادات الاعتماد العضوي والجودة:</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {currentBatch.certifications.map((cert, idx) => (
@@ -248,8 +270,8 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({
                     </span>
                   ))}
                 </div>
-                <div className="pt-2 border-t border-emerald-800 text-[10px] font-mono text-emerald-300/80 truncate">
-                  Blockchain Seal: {currentBatch.blockchainTx}
+                <div className="pt-2 border-t border-emerald-800 text-[10px] font-mono text-emerald-300/80 truncate text-left">
+                  الختم الرقمي المشفر: {currentBatch.blockchainTx}
                 </div>
               </div>
             </div>

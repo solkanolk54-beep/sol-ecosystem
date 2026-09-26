@@ -13,7 +13,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAiScanner,
 }) => {
   return (
-    <header className="sticky top-0 z-40 bg-[#0F5132] text-white border-b border-[#165B37] shadow-md">
+    <header dir="rtl" className="sticky top-0 z-40 bg-[#0F5132] text-white border-b border-[#165B37] shadow-md font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Platform Name */}
@@ -23,13 +23,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-wider text-base md:text-lg">SOL ECOSYSTEM</span>
+                <span className="font-extrabold tracking-wide text-base md:text-lg">منظومة SOL الرقمية</span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#8B4513] text-amber-100 uppercase tracking-wider">
-                  AgriTech MVP
+                  تحدي AgriTech 2026
                 </span>
               </div>
               <p className="text-xs text-emerald-200 hidden sm:block">
-                Smart Agriculture & Livestock Management
+                مستثمرة ميلة الفلاحية • حوض بني هارون
               </p>
             </div>
           </div>
@@ -40,56 +40,56 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setActiveTab('mobile_simulator')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'mobile_simulator'
-                  ? 'bg-white text-[#0F5132] shadow-sm'
+                  ? 'bg-white text-[#0F5132] shadow-sm font-bold'
                   : 'text-emerald-100 hover:bg-white/10'
               }`}
             >
               <Smartphone className="w-3.5 h-3.5" />
-              Flutter Mobile App
+              محاكي الهاتف (Flutter RTL)
             </button>
             <button
               onClick={() => setActiveTab('full_dashboard')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'full_dashboard'
-                  ? 'bg-white text-[#0F5132] shadow-sm'
+                  ? 'bg-white text-[#0F5132] shadow-sm font-bold'
                   : 'text-emerald-100 hover:bg-white/10'
               }`}
             >
               <Monitor className="w-3.5 h-3.5" />
-              Full Operations Hub
+              لوحة العمليات الموسعة
             </button>
             <button
               onClick={() => setActiveTab('step1_sql')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'step1_sql'
-                  ? 'bg-white text-[#0F5132] shadow-sm'
+                  ? 'bg-white text-[#0F5132] shadow-sm font-bold'
                   : 'text-emerald-100 hover:bg-white/10'
               }`}
             >
               <Database className="w-3.5 h-3.5" />
-              Step 1: PostgreSQL Schema
+              الخطوة 1: قاعدة البيانات (SQL)
             </button>
             <button
               onClick={() => setActiveTab('step2_express')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'step2_express'
-                  ? 'bg-white text-[#0F5132] shadow-sm'
+                  ? 'bg-white text-[#0F5132] shadow-sm font-bold'
                   : 'text-emerald-100 hover:bg-white/10'
               }`}
             >
               <Server className="w-3.5 h-3.5" />
-              Step 2: Express Server
+              الخطوة 2: خادم Express API
             </button>
             <button
               onClick={() => setActiveTab('step3_flutter')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'step3_flutter'
-                  ? 'bg-white text-[#0F5132] shadow-sm'
+                  ? 'bg-white text-[#0F5132] shadow-sm font-bold'
                   : 'text-emerald-100 hover:bg-white/10'
               }`}
             >
               <Code className="w-3.5 h-3.5" />
-              Step 3: Flutter Code
+              الخطوة 3: كود Flutter (Dart)
             </button>
           </nav>
 
@@ -97,15 +97,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={onOpenAiScanner}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#8B4513] hover:bg-[#A0522D] text-amber-50 text-xs font-bold shadow transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#8B4513] hover:bg-[#A0522D] text-amber-50 text-xs font-bold shadow transition-colors cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>AI Leaf Scan</span>
+              <span>فحص فوري بالذكاء الاصطناعي</span>
             </button>
 
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs text-emerald-100">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Mila, DZ 142.5 Ha</span>
+              <span>ميلة: 142.5 هكتار</span>
             </div>
           </div>
         </div>
@@ -118,7 +118,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               activeTab === 'mobile_simulator' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100'
             }`}
           >
-            Flutter App
+            تطبيق الهاتف (RTL)
           </button>
           <button
             onClick={() => setActiveTab('full_dashboard')}
@@ -126,7 +126,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               activeTab === 'full_dashboard' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100'
             }`}
           >
-            Operations Hub
+            لوحة العمليات
           </button>
           <button
             onClick={() => setActiveTab('step1_sql')}
@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               activeTab === 'step1_sql' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100'
             }`}
           >
-            Step 1: SQL
+            قاعدة البيانات SQL
           </button>
           <button
             onClick={() => setActiveTab('step2_express')}
@@ -142,7 +142,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               activeTab === 'step2_express' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100'
             }`}
           >
-            Step 2: API
+            خادم API
           </button>
           <button
             onClick={() => setActiveTab('step3_flutter')}
@@ -150,7 +150,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               activeTab === 'step3_flutter' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100'
             }`}
           >
-            Step 3: Flutter
+            تطبيق Flutter
           </button>
         </div>
       </div>

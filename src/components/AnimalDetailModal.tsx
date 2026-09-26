@@ -28,8 +28,21 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
     }
   };
 
+  const getConditionText = (condition: string) => {
+    switch (condition) {
+      case 'healthy':
+        return 'سليم وبصحة جيدة';
+      case 'lactating':
+        return 'مدرّة للحليب';
+      case 'pregnant':
+        return 'حامل ومتابعة بيطرياً';
+      default:
+        return condition;
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div dir="rtl" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 font-sans text-right">
       <div className="bg-white text-stone-900 w-full max-w-xl rounded-2xl overflow-hidden border border-slate-200 shadow-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="bg-[#1E3A8A] text-white px-6 py-4 flex items-center justify-between">
@@ -45,13 +58,13 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-blue-200">
-                {animal.breed} • {animal.species.toUpperCase()} ({animal.gender})
+                {animal.breed} • {animal.species === 'cattle' ? 'أبقار' : 'أغنام'} ({animal.gender === 'female' ? 'أنثى' : 'ذكر'})
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-blue-200 hover:text-white hover:bg-blue-800 transition-colors"
+            className="p-1 rounded-lg text-blue-200 hover:text-white hover:bg-blue-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -64,48 +77,48 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
               <div className="text-xs text-slate-500 flex items-center gap-1">
                 <Scale className="w-3.5 h-3.5 text-blue-600" />
-                <span>Current Weight</span>
+                <span>الوزن الحالي</span>
               </div>
-              <div className="text-lg font-black text-slate-900 mt-1">{animal.currentWeightKg} kg</div>
-              <div className="text-[10px] text-slate-400">{animal.ageMonths} Months Old</div>
+              <div className="text-lg font-black text-slate-900 mt-1">{animal.currentWeightKg} كغ</div>
+              <div className="text-[10px] text-slate-400">العمر: {animal.ageMonths} شهر</div>
             </div>
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
               <div className="text-xs text-slate-500 flex items-center gap-1">
                 <HeartPulse className="w-3.5 h-3.5 text-rose-500" />
-                <span>Health State</span>
+                <span>الحالة الصحية</span>
               </div>
-              <div className="text-sm font-bold text-slate-900 mt-1 uppercase text-emerald-700">
-                {animal.healthCondition}
+              <div className="text-sm font-bold text-slate-900 mt-1 text-emerald-700">
+                {getConditionText(animal.healthCondition)}
               </div>
-              <div className="text-[10px] text-slate-400">Zone: {animal.pastureZone.split(' ')[0]}</div>
+              <div className="text-[10px] text-slate-400">المرعى: {animal.pastureZone}</div>
             </div>
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
               <div className="text-xs text-slate-500 flex items-center gap-1">
                 <Activity className="w-3.5 h-3.5 text-amber-600" />
-                <span>Yield Metric</span>
+                <span>معدل الإنتاج</span>
               </div>
               <div className="text-base font-bold text-slate-900 mt-1">
-                {animal.currentYieldValue} {animal.yieldUnit}
+                {animal.currentYieldValue} {animal.yieldUnit === 'L/day' ? 'لتر/يوم' : animal.yieldUnit === 'g/day' ? 'غ/يوم' : animal.yieldUnit}
               </div>
-              <div className="text-[10px] text-slate-400">{animal.yieldMetric}</div>
+              <div className="text-[10px] text-slate-400">قياس بيومتري دوري</div>
             </div>
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
               <div className="text-xs text-slate-500 flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Birth Date</span>
+                <span>تاريخ الولادة</span>
               </div>
               <div className="text-sm font-bold text-slate-900 mt-1">{animal.birthDate}</div>
-              <div className="text-[10px] text-slate-400">Single Sire Pedigree</div>
+              <div className="text-[10px] text-slate-400">سلالة نقية موثقة</div>
             </div>
           </div>
 
           {/* Feed Plan */}
           <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-4">
             <div className="text-xs font-bold text-[#8B4513] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-              <span>Nutritional Feed Plan & Rations</span>
+              <span>خطة التغذية العضوية والحصص اليومية:</span>
             </div>
             <p className="text-xs text-stone-700 font-medium">{animal.feedPlan}</p>
           </div>
@@ -115,14 +128,14 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                 <Scale className="w-4 h-4 text-blue-600" />
-                <span>RFID Digital Scale Weigh-in History</span>
+                <span>سجل أوزان الميزان الرقمي RFID</span>
               </h4>
               <button
                 onClick={() => setIsAddingWeight(!isAddingWeight)}
-                className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Add Log</span>
+                <span>إضافة وزن جديد</span>
               </button>
             </div>
 
@@ -131,17 +144,17 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
                 <input
                   type="number"
                   step="0.5"
-                  placeholder="New weight in kg (e.g. 648)"
+                  placeholder="أدخل الوزن بالكغ (مثال: 648)"
                   value={newWeightInput}
                   onChange={(e) => setNewWeightInput(e.target.value)}
-                  className="bg-white border border-blue-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 w-full focus:outline-none focus:border-blue-500"
+                  className="bg-white border border-blue-300 rounded-lg px-3 py-1.5 text-xs text-slate-900 w-full focus:outline-none focus:border-blue-500 text-right"
                   required
                 />
                 <button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap cursor-pointer"
                 >
-                  Save Log
+                  حفظ في السجل
                 </button>
               </form>
             )}
@@ -150,10 +163,10 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
               {animal.weightHistory.map((item, idx) => (
                 <div key={idx} className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
                   <div className="text-[10px] text-slate-400">{item.date}</div>
-                  <div className="text-sm font-bold text-slate-800">{item.weightKg} kg</div>
+                  <div className="text-sm font-bold text-slate-800">{item.weightKg} كغ</div>
                   {idx > 0 && (
                     <div className="text-[10px] text-emerald-600 font-semibold">
-                      +{ (item.weightKg - animal.weightHistory[idx - 1].weightKg).toFixed(1) } kg
+                      +{ (item.weightKg - animal.weightHistory[idx - 1].weightKg).toFixed(1) } كغ
                     </div>
                   )}
                 </div>
@@ -165,7 +178,7 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
           <div>
             <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
               <Stethoscope className="w-4 h-4 text-[#1E3A8A]" />
-              <span>Veterinary Care & Vaccination Protocol</span>
+              <span>الرعاية البيطرية وجدول التلقيحات</span>
             </h4>
             <div className="space-y-2">
               {animal.vaccinationSchedule.map((vac, idx) => (
@@ -181,17 +194,17 @@ export const AnimalDetailModal: React.FC<AnimalDetailModalProps> = ({
                     />
                     <div>
                       <div className="font-semibold text-slate-800">{vac.vaccine}</div>
-                      <div className="text-[10px] text-slate-400">Scheduled: {vac.date}</div>
+                      <div className="text-[10px] text-slate-400">التاريخ المبرمج: {vac.date}</div>
                     </div>
                   </div>
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                       vac.status === 'completed'
                         ? 'bg-emerald-100 text-emerald-800'
                         : 'bg-amber-100 text-amber-800'
                     }`}
                   >
-                    {vac.status}
+                    {vac.status === 'completed' ? 'مكتمل' : 'قادم'}
                   </span>
                 </div>
               ))}

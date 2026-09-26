@@ -15,8 +15,23 @@ export const TreeDetailModal: React.FC<TreeDetailModalProps> = ({
 }) => {
   if (!tree) return null;
 
+  const getHealthBadge = (status: string) => {
+    switch (status) {
+      case 'healthy':
+        return { text: 'سليمة', bg: 'bg-emerald-500/30 text-emerald-100 border-emerald-400/40' };
+      case 'needs_attention':
+        return { text: 'تحتاج عناية', bg: 'bg-amber-500/30 text-amber-100 border-amber-400/40' };
+      case 'diseased':
+        return { text: 'مصابة', bg: 'bg-rose-500/30 text-rose-100 border-rose-400/40' };
+      default:
+        return { text: status, bg: 'bg-stone-500/30 text-stone-100 border-stone-400/40' };
+    }
+  };
+
+  const badge = getHealthBadge(tree.healthStatus);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div dir="rtl" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 font-sans text-right">
       <div className="bg-white text-stone-900 w-full max-w-xl rounded-2xl overflow-hidden border border-emerald-100 shadow-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="bg-[#0F5132] text-white px-6 py-4 flex items-center justify-between">
@@ -27,16 +42,8 @@ export const TreeDetailModal: React.FC<TreeDetailModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-lg">{tree.tagCode}</h3>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                    tree.healthStatus === 'healthy'
-                      ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40'
-                      : tree.healthStatus === 'needs_attention'
-                      ? 'bg-amber-500/30 text-amber-200 border border-amber-400/40'
-                      : 'bg-rose-500/30 text-rose-200 border border-rose-400/40'
-                  }`}
-                >
-                  {tree.healthStatus.replace('_', ' ')}
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.bg}`}>
+                  {badge.text}
                 </span>
               </div>
               <p className="text-xs text-emerald-200">{tree.variety} • {tree.species}</p>
@@ -44,7 +51,7 @@ export const TreeDetailModal: React.FC<TreeDetailModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800 transition-colors"
+            className="p-1 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -57,39 +64,39 @@ export const TreeDetailModal: React.FC<TreeDetailModalProps> = ({
             <div className="bg-stone-50 border border-stone-200 rounded-xl p-3">
               <div className="text-xs text-stone-500 flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-stone-400" />
-                <span>Tree Age</span>
+                <span>عمر الشجرة</span>
               </div>
-              <div className="text-base font-bold text-stone-900 mt-1">{tree.ageYears} Yrs</div>
-              <div className="text-[10px] text-stone-400">Planted {tree.plantingDate}</div>
+              <div className="text-base font-bold text-stone-900 mt-1">{tree.ageYears} سنوات</div>
+              <div className="text-[10px] text-stone-400">تاريخ الغرس: {tree.plantingDate}</div>
             </div>
 
             <div className="bg-stone-50 border border-stone-200 rounded-xl p-3">
               <div className="text-xs text-stone-500 flex items-center gap-1">
                 <Droplets className="w-3.5 h-3.5 text-blue-500" />
-                <span>Soil Moisture</span>
+                <span>رطوبة التربة</span>
               </div>
               <div className="text-base font-bold text-blue-700 mt-1">{tree.soilMoisturePct}%</div>
-              <div className="text-[10px] text-stone-400">TDR Sensor #S-{tree.id.slice(-3)}</div>
+              <div className="text-[10px] text-stone-400">مستشعر TDR #S-{tree.id.slice(-3)}</div>
             </div>
 
             <div className="bg-stone-50 border border-stone-200 rounded-xl p-3">
               <div className="text-xs text-stone-500 flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-amber-600" />
-                <span>Last Harvest</span>
+                <span>آخر جني</span>
               </div>
               <div className="text-base font-bold text-stone-900 mt-1">
-                {tree.lastHarvestDate || 'In Season'}
+                {tree.lastHarvestDate || 'الموسم الحالي'}
               </div>
-              <div className="text-[10px] text-stone-400">Batch Grade: EVOO A</div>
+              <div className="text-[10px] text-stone-400">تصنيف الجودة: بكر ممتاز A</div>
             </div>
 
             <div className="bg-stone-50 border border-stone-200 rounded-xl p-3">
               <div className="text-xs text-stone-500 flex items-center gap-1">
                 <Activity className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Canopy Diam.</span>
+                <span>قطر المجموع الخضري</span>
               </div>
-              <div className="text-base font-bold text-stone-900 mt-1">{tree.canopyDiameterMeters} m</div>
-              <div className="text-[10px] text-stone-400">Drone LiDAR Scanned</div>
+              <div className="text-base font-bold text-stone-900 mt-1">{tree.canopyDiameterMeters} م</div>
+              <div className="text-[10px] text-stone-400">مسح مسيّرة LiDAR</div>
             </div>
           </div>
 
@@ -98,18 +105,20 @@ export const TreeDetailModal: React.FC<TreeDetailModalProps> = ({
             <div>
               <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0F5132]">
                 <MapPin className="w-4 h-4" />
-                <span>Parcel Zone: {tree.parcelZone}</span>
+                <span>القطعة الزراعية: {tree.parcelZone}</span>
               </div>
               <div className="text-xs text-stone-600 mt-0.5">
-                Irrigation Status:{' '}
-                <span className="font-bold uppercase text-stone-800">{tree.irrigationStatus}</span> (Pulsed Solar Drip Line)
+                حالة الري:{' '}
+                <span className="font-bold text-stone-800">
+                  {tree.irrigationStatus === 'optimal' ? 'مثالي' : tree.irrigationStatus === 'deficit' ? 'عجز مائي' : 'مبرمج'}
+                </span> (شبكة التقطير بالطاقة الشمسية)
               </div>
             </div>
             <button
               onClick={() => onToggleIrrigation(tree.id)}
-              className="px-3 py-1.5 rounded-lg bg-[#0F5132] hover:bg-[#165B37] text-white text-xs font-semibold shadow-sm transition-colors whitespace-nowrap"
+              className="px-3 py-1.5 rounded-lg bg-[#0F5132] hover:bg-[#165B37] text-white text-xs font-semibold shadow-sm transition-colors whitespace-nowrap cursor-pointer"
             >
-              {tree.irrigationStatus === 'deficit' ? 'Trigger 2h Drip Flow' : 'Cycle Irrigation Check'}
+              {tree.irrigationStatus === 'deficit' ? 'تشغيل الري بالتقطير لساعتين' : 'دورة فحص الري الذكي'}
             </button>
           </div>
 
@@ -117,13 +126,13 @@ export const TreeDetailModal: React.FC<TreeDetailModalProps> = ({
           <div>
             <h4 className="text-sm font-bold text-stone-900 mb-2 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-[#0F5132]" />
-              <span>Agronomic Health History & AI Diagnoses ({tree.diseaseHistory.length})</span>
+              <span>سجل الصحة النباتية وتشخيصات الذكاء الاصطناعي ({tree.diseaseHistory.length})</span>
             </h4>
 
             {tree.diseaseHistory.length === 0 ? (
               <div className="bg-stone-50 border border-stone-200 rounded-xl p-4 text-center text-xs text-stone-500">
                 <ShieldCheck className="w-6 h-6 text-emerald-500 mx-auto mb-1.5" />
-                No pathology recorded. Tree has maintained clean phytosanitary status.
+                لا توجد إصابات مسجلة. الشجرة في حالة صحية ممتازة ونظيفة نباتياً.
               </div>
             ) : (
               <div className="space-y-2.5">
@@ -143,14 +152,14 @@ export const TreeDetailModal: React.FC<TreeDetailModalProps> = ({
                             : 'bg-rose-100 text-rose-800'
                         }`}
                       >
-                        {item.status.toUpperCase()}
+                        {item.status === 'resolved' ? 'تمت المعالجة' : item.status === 'in_progress' ? 'قيد المتابعة' : 'معلق'}
                       </span>
                     </div>
                     <div className="text-xs text-stone-600">
-                      <span className="font-semibold text-stone-700">Treatment: </span>
+                      <span className="font-semibold text-stone-700">بروتوكول العلاج: </span>
                       {item.treatment}
                     </div>
-                    <div className="text-[10px] text-stone-400 pt-1">Logged on {item.date} by Lead Agronomist</div>
+                    <div className="text-[10px] text-stone-400 pt-1">سُجل بتاريخ {item.date} بواسطة المهندس الزراعي المسؤول</div>
                   </div>
                 ))}
               </div>

@@ -2,15 +2,15 @@ import { Farm, Tree, LivestockAnimal, TraceabilityBatch, DiagnosticResult } from
 
 export const INITIAL_FARM: Farm = {
   id: 'b0000000-0000-0000-0000-000000000001',
-  name: 'SOL Green Valley Agro-Estate',
+  name: 'مستثمرة ميلة الفلاحية - حوض بني هارون',
   code: 'SOL-FARM-01',
   areaHectares: 142.5,
   latitude: 36.4503,
   longitude: 6.2644,
-  region: 'Mila Agro-Industrial Basin',
-  country: 'Algeria',
-  soilType: 'Rich Silty Loam & Agricultural Alluvial Soil',
-  irrigationSource: 'Beni Haroun Basin & Solar Drip Network',
+  region: 'ميلة، الجزائر',
+  country: 'حوض بني هارون',
+  soilType: 'تربة طميية فيضية غنية وخصبة (حوض ميلة)',
+  irrigationSource: 'حوض سد بني هارون وشبكة السقي بالتقطير بالطاقة الشمسية',
   totalTrees: 4250,
   healthyTrees: 3820,
   needsAttentionTrees: 320,
@@ -19,7 +19,7 @@ export const INITIAL_FARM: Farm = {
   cattleCount: 220,
   sheepCount: 460,
   avgSoilMoisture: '38.4%',
-  weather: '24°C Mediterranean Sunny'
+  weather: '24° م مشمس، شمالي غربي 12 كم/سا'
 };
 
 export const INITIAL_TREES: Tree[] = [
