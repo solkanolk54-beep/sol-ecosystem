@@ -1,0 +1,6 @@
+{
+  "name": "SOL Ecosystem - Smart Agriculture & Livestock Platform",
+  "description": "Integrated AgriTech MVP featuring Smart Orchard Management, Cattle & Sheep Livestock Tracking, AI Diagnostics, Farm-to-Fork Traceability, PostgreSQL schema, Express REST API, and Flutter Material 3 client.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

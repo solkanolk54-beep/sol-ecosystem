@@ -1,0 +1,21 @@
+{
+  "name": "sol-ecosystem-backend",
+  "version": "1.0.0",
+  "description": "SOL Ecosystem - Smart Agriculture and Livestock Management Backend REST API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "db:migrate": "psql -U postgres -d sol_ecosystem -f schema.sql"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
