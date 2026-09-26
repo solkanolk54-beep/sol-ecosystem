@@ -96,3 +96,83 @@ export interface DiagnosticResult {
   recommendedTreatment: string;
   preventativeAction: string;
 }
+
+export interface ToastNotificationItem {
+  id: string;
+  type: 'danger' | 'warning' | 'info' | 'success';
+  title: string;
+  message: string;
+  category: 'tree' | 'livestock' | 'system';
+  timestamp: string;
+  duration?: number;
+  actionLabel?: string;
+  onAction?: () => void;
+  metadata?: {
+    treeId?: string;
+    animalId?: string;
+    tagCode?: string;
+    tagRfid?: string;
+  };
+}
+
+export interface WeatherDayForecast {
+  dayName: string;
+  date: string;
+  maxTempC: number;
+  minTempC: number;
+  humidityPct: number;
+  rainProbPct: number;
+  expectedRainMm: number;
+  et0MmDay: number;
+  conditionArabic: string;
+  icon: 'sun' | 'cloud' | 'rain' | 'wind';
+}
+
+export interface WeatherCondition {
+  currentTempC: number;
+  feelsLikeC: number;
+  humidityPct: number;
+  windSpeedKmh: number;
+  windDirection: string;
+  solarRadiationWm2: number;
+  uvIndex: number;
+  rainProbabilityPct: number;
+  expectedRainfallMm: number;
+  et0MmDay: number;
+  conditionArabic: string;
+  stationName: string;
+  forecast5Days: WeatherDayForecast[];
+}
+
+export interface ParcelIrrigationMetrics {
+  id: string;
+  name: string;
+  arabicName: string;
+  species: string;
+  variety: string;
+  cropCoefficientKc: number;
+  areaHectares: number;
+  treeCount: number;
+  treeIds: string[];
+  soilType: string;
+  currentMoisturePct: number;
+  fieldCapacityPct: number;
+  criticalThresholdPct: number;
+  wiltingPointPct: number;
+  depletionPct: number;
+  etCropMmDay: number;
+  dailyMoistureDropPct: number;
+  hoursUntilCritical: number;
+  urgency: 'critical' | 'warning' | 'optimal' | 'excess';
+  suggestedCycle: {
+    scheduledDate: string;
+    scheduledTimeWindow: string;
+    durationMinutes: number;
+    waterVolumeM3: number;
+    flowRateLph: number;
+    savingsKwh: number;
+    agronomicJustification: string;
+  };
+  sensorReadings24h: { hour: string; moisturePct: number }[];
+  valveStatus: 'idle' | 'running' | 'scheduled';
+}

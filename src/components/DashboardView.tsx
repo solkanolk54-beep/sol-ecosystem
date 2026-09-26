@@ -10,7 +10,10 @@ import {
   Camera,
   MapPin,
   ChevronLeft,
-  Sun
+  Sun,
+  AlertOctagon,
+  Syringe,
+  BellRing
 } from 'lucide-react';
 import { Farm, Tree, LivestockAnimal, TraceabilityBatch } from '../types';
 
@@ -24,6 +27,9 @@ interface DashboardViewProps {
   onOpenAiScanner: () => void;
   onOpenTraceability: () => void;
   isMobileSimulator?: boolean;
+  onTriggerTreeAlert?: () => void;
+  onTriggerLivestockAlert?: () => void;
+  onNavigateToPredictiveIrrigation?: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -36,6 +42,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenAiScanner,
   onOpenTraceability,
   isMobileSimulator = false,
+  onTriggerTreeAlert,
+  onTriggerLivestockAlert,
+  onNavigateToPredictiveIrrigation,
 }) => {
   // Filters for trees
   const [treeHealthFilter, setTreeHealthFilter] = useState<'all' | 'healthy' | 'needs_attention' | 'diseased'>('all');
@@ -108,6 +117,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         return condition;
     }
   };
+
+  const diseasedTreeSample = trees.find((t) => t.healthStatus === 'diseased') || trees[2];
+  const upcomingLivestockSample = livestock.find((a) => a.vaccinationSchedule.some((v) => v.status === 'upcoming')) || livestock[0];
 
   return (
     <div dir="rtl" className={`space-y-5 text-right font-sans ${isMobileSimulator ? 'p-3' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'}`}>
@@ -187,7 +199,185 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* 2. QUICK AI SCAN PROMPT BANNER */}
+      {/* 2. REAL-TIME TOAST NOTIFICATIONS & ACTIVE ALERTS BAR */}
+      <div className="bg-gradient-to-r from-stone-900 to-stone-950 text-white rounded-2xl p-4 sm:p-5 border border-stone-800 shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-800 pb-3 mb-3.5">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+              <BellRing className="w-4 h-4 animate-bounce" />
+            </div>
+            <div>
+              <h3 className="text-xs sm:text-sm font-extrabold flex items-center gap-2">
+                نظام الإشعارات والتنبيهات الميدانية (Toast Notifications System)
+                <span className="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-full font-mono">
+                  تنبيهات فورية
+                </span>
+              </h3>
+              <p className="text-[11px] text-stone-400">
+                رصد آني لحالات الأشجار المصابة ومواعيد التلقيح البيطري القادمة لقطيع ميلة
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                onTriggerTreeAlert?.();
+                setTimeout(() => onTriggerLivestockAlert?.(), 800);
+              }}
+              className="text-[11px] bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <BellRing className="w-3.5 h-3.5" />
+              <span>إرسال إشعارات تجريبية الآن</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Two Alert Badges Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          {/* Alert 1: Diseased Tree */}
+          <div className="bg-rose-950/40 border border-rose-800/60 rounded-xl p-3 flex flex-col justify-between gap-2.5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-rose-600/20 text-rose-400 border border-rose-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                  <AlertOctagon className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-extrabold text-rose-200">
+                    تنبيه صحة نباتية: شجرة مصابة (عفن الأنثراكنوز)
+                  </div>
+                  <p className="text-[11px] text-rose-300/80 mt-0.5">
+                    الشجرة <strong>{diseasedTreeSample.tagCode}</strong> ({diseasedTreeSample.variety}) بالقطعة {diseasedTreeSample.parcelZone} بحاجة لعزل ورش بيولوجي.
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold bg-rose-500/20 text-rose-200 px-2 py-0.5 rounded-full shrink-0 border border-rose-500/40">
+                مصابة
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1 border-t border-rose-900/50">
+              <button
+                onClick={() => onSelectTree(diseasedTreeSample)}
+                className="text-[11px] font-bold bg-rose-600 hover:bg-rose-500 text-white px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+              >
+                معاينة الشجرة
+              </button>
+              <button
+                onClick={onTriggerTreeAlert}
+                className="text-[11px] text-rose-300 hover:text-white px-2 py-1 transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <span>إطلاق تنبيه Toast</span>
+                <ChevronLeft className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+
+          {/* Alert 2: Upcoming Vaccination */}
+          <div className="bg-amber-950/40 border border-amber-800/60 rounded-xl p-3 flex flex-col justify-between gap-2.5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-amber-600/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                  <Syringe className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-extrabold text-amber-200">
+                    تنبيه بيطري: موعد تطعيم قادم للقطيع
+                  </div>
+                  <p className="text-[11px] text-amber-300/80 mt-0.5">
+                    البقرة <strong>{upcomingLivestockSample.nameOrAlias} ({upcomingLivestockSample.tagRfid})</strong> - مبرمج لها تلقيح كلوستريدي معزز قريباً.
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold bg-amber-500/20 text-amber-200 px-2 py-0.5 rounded-full shrink-0 border border-amber-500/40">
+                تلقيح قادم
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1 border-t border-amber-900/50">
+              <button
+                onClick={() => onSelectAnimal(upcomingLivestockSample)}
+                className="text-[11px] font-bold bg-amber-600 hover:bg-amber-500 text-stone-950 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+              >
+                فتح السجل البيطري
+              </button>
+              <button
+                onClick={onTriggerLivestockAlert}
+                className="text-[11px] text-amber-300 hover:text-white px-2 py-1 transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <span>إطلاق تنبيه Toast</span>
+                <ChevronLeft className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2.5 PREDICTIVE IRRIGATION & FAO-56 SCHEDULING BANNER */}
+      <div className="bg-gradient-to-r from-[#0B3D25] via-[#0F5132] to-[#124B2E] text-white rounded-2xl p-4 sm:p-5 border border-emerald-800 shadow-md">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 flex items-center justify-center shrink-0">
+              <Droplets className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-extrabold text-sm sm:text-base text-white">
+                  نظام الري التنبؤي وحساب البخر-نتح المرجعي (FAO-56)
+                </h3>
+                <span className="text-[10px] font-bold bg-[#A3E635] text-[#0F5132] px-2 py-0.5 rounded-full">
+                  جديد • حوض بني هارون
+                </span>
+              </div>
+              <p className="text-xs text-emerald-100/90 mt-1 max-w-2xl leading-relaxed">
+                حساب آلي للاحتياج المائي لكل قطعة شجرية بناءً على مجسات رطوبة التربة الحية (FDR) وحرارة الطقس (24° م)
+                ومعدل البخر المرجعي (4.6 مم/يوم)، مع جدولة دورات الري بالتقطير لترشيد استهلاك مياه سد بني هارون.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={onNavigateToPredictiveIrrigation}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#A3E635] hover:bg-[#91ce2b] text-[#0F5132] font-black text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <span>فتح لوحة الري التنبؤي والجدولة الكاملة</span>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Parcel Status Indicators */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-4 pt-3 border-t border-emerald-800/60 text-xs">
+          <div className="bg-white/10 rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-emerald-200">بستان ألفا (الشملالي)</div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">42.0% رطوبة</div>
+            <div className="text-[10px] text-emerald-300 font-bold">مثالي • دورة بعد يومين</div>
+          </div>
+          <div className="bg-rose-950/60 border border-rose-500/50 rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-rose-300">بستان بيتا (البيشولين)</div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">24.2% رطوبة</div>
+            <div className="text-[10px] text-rose-300 font-extrabold animate-pulse">🚨 عجز حرج • ري الليلة</div>
+          </div>
+          <div className="bg-white/10 rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-emerald-200">بستان غاما (الأربيكينا)</div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">39.5% رطوبة</div>
+            <div className="text-[10px] text-emerald-300 font-bold">مثالي • مجدول الأربعاء</div>
+          </div>
+          <div className="bg-white/10 rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-emerald-200">بستان الحمضيات (المالطي)</div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">45.0% رطوبة</div>
+            <div className="text-[10px] text-cyan-300 font-bold">سعة حقلية كافية</div>
+          </div>
+          <div className="bg-amber-950/60 border border-amber-500/50 rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-amber-300">مدرجات التين السلطاني</div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">26.5% رطوبة</div>
+            <div className="text-[10px] text-amber-300 font-bold">⚠️ اقتراب العتبة • غداً</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. QUICK AI SCAN PROMPT BANNER */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-[#8B4513]/10 border border-[#8B4513]/20 flex items-center justify-center text-[#8B4513] shrink-0">
@@ -217,7 +407,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </button>
       </div>
 
-      {/* 3. MODULE A: SMART ORCHARD & PLANT MANAGEMENT */}
+      {/* 4. MODULE A: SMART ORCHARD & PLANT MANAGEMENT */}
       <div className="bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
           <div>
@@ -238,7 +428,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setTreeHealthFilter('all')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 treeHealthFilter === 'all'
                   ? 'bg-stone-900 text-white'
                   : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
@@ -248,7 +438,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
             <button
               onClick={() => setTreeHealthFilter('healthy')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 treeHealthFilter === 'healthy'
                   ? 'bg-emerald-600 text-white'
                   : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
@@ -258,7 +448,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
             <button
               onClick={() => setTreeHealthFilter('needs_attention')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 treeHealthFilter === 'needs_attention'
                   ? 'bg-amber-600 text-white'
                   : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
@@ -268,7 +458,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
             <button
               onClick={() => setTreeHealthFilter('diseased')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 treeHealthFilter === 'diseased'
                   ? 'bg-rose-600 text-white'
                   : 'bg-rose-50 text-rose-700 hover:bg-rose-100'
@@ -342,7 +532,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* 4. MODULE B: LIVESTOCK MANAGEMENT SYSTEM (CATTLE & SHEEP) */}
+      {/* 5. MODULE B: LIVESTOCK MANAGEMENT SYSTEM (CATTLE & SHEEP) */}
       <div className="bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
           <div>
@@ -363,7 +553,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setLivestockSpeciesFilter('all')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 livestockSpeciesFilter === 'all'
                   ? 'bg-[#1E3A8A] text-white'
                   : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
@@ -373,7 +563,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
             <button
               onClick={() => setLivestockSpeciesFilter('cattle')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 livestockSpeciesFilter === 'cattle'
                   ? 'bg-[#1E3A8A] text-white'
                   : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
@@ -383,7 +573,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
             <button
               onClick={() => setLivestockSpeciesFilter('sheep')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 livestockSpeciesFilter === 'sheep'
                   ? 'bg-[#8B4513] text-white'
                   : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
@@ -471,7 +661,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* 5. MODULE C: TRACEABILITY & FARM-TO-FORK BANNER */}
+      {/* 6. MODULE C: TRACEABILITY & FARM-TO-FORK BANNER */}
       <div className="bg-gradient-to-r from-[#1E3A8A] to-[#1E40AF] text-white rounded-3xl p-5 sm:p-6 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
