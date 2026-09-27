@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sprout, Smartphone, Monitor, Database, Server, Code, Sparkles, Bell, AlertOctagon, Syringe, CheckCircle2, Droplets, Fuel, FileText } from 'lucide-react';
+import { Sprout, Smartphone, Monitor, Database, Server, Code, Sparkles, Bell, AlertOctagon, Syringe, Droplets, Fuel, FileText } from 'lucide-react';
 import { ToastNotificationItem } from '../types';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -30,16 +30,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header dir="rtl" className="sticky top-0 z-40 bg-[#0F5132] dark:bg-[#072416] text-white border-b border-[#165B37] dark:border-emerald-950 shadow-md font-sans transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between min-h-[56px] sm:h-16 py-1.5 sm:py-0">
           
           {/* Logo & Platform Name */}
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20 shadow-inner">
               <Sprout className="w-5 h-5 sm:w-6 sm:h-6 text-[#A3E635]" />
             </div>
             <div>
-              <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="font-extrabold tracking-wide text-xs sm:text-base md:text-lg whitespace-nowrap">منظومة SOL</span>
                 <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#8B4513] text-amber-100 uppercase tracking-wider whitespace-nowrap">
                   2026
@@ -51,7 +51,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Navigation Tabs (Desktop view) */}
+          {/* Navigation Tabs (Desktop view only - hidden on mobile) */}
           <nav className="hidden lg:flex items-center gap-1 bg-black/20 p-1 rounded-xl border border-white/10">
             <button
               onClick={() => setActiveTab('mobile_simulator')}
@@ -95,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Fuel className="w-3.5 h-3.5 text-amber-300" />
-              مراقبة استهلاك الموارد (الآلات)
+              مراقبة استهلاك الموارد
             </button>
             <button
               onClick={() => setActiveTab('weekly_summary')}
@@ -106,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <FileText className="w-3.5 h-3.5 text-emerald-300" />
-              التقرير الأسبوعي (PDF)
+              التقرير الأسبوعي
             </button>
             <button
               onClick={() => setActiveTab('step1_sql')}
@@ -128,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Server className="w-3.5 h-3.5" />
-              Express
+              API
             </button>
             <button
               onClick={() => setActiveTab('step3_flutter')}
@@ -145,16 +145,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Quick AI Action & Farm Status & Notification Bell & Theme Toggle */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            {/* Field Night Inspection Mode Toggle */}
             <ThemeToggle variant="icon" />
 
-            {/* Notification Bell with Dropdown */}
+            {/* Notification Bell */}
             <div className="relative">
               <button
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                 className="relative p-1.5 sm:p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer border border-white/15"
                 title="مركز الإشعارات والتنبيهات"
-                aria-label="مركز الإشعارات"
               >
                 <Bell className="w-4 h-4 text-amber-200" />
                 {activeAlertCount > 0 && (
@@ -183,58 +181,46 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </div>
 
                     <div className="p-3 space-y-2 max-h-72 overflow-y-auto">
-                      {/* Alert Item 1: Diseased Tree */}
                       <div className="p-2.5 rounded-xl bg-rose-950/50 border border-rose-800/60 text-xs space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="font-extrabold text-rose-300 flex items-center gap-1.5">
                             <AlertOctagon className="w-3.5 h-3.5 text-rose-400" />
                             شجرة مصابة بعفن الأنثراكنوز
                           </span>
-                          <span className="text-[9px] bg-rose-500/20 text-rose-200 px-1.5 py-0.2 rounded border border-rose-500/30">
-                            عاجل
-                          </span>
                         </div>
                         <p className="text-[11px] text-rose-100">
-                          الشجرة <strong>SOL-TR-OLV-003</strong> في حقل غاما مصابة بمرض الأنثراكنوز.
+                          الشجرة <strong>SOL-TR-OLV-003</strong> مصابة بمرض الأنثراكنوز.
                         </p>
-                        <div className="flex items-center gap-2 pt-1">
-                          <button
-                            onClick={() => {
-                              onSelectTreeById?.('tr-003');
-                              setIsNotificationsOpen(false);
-                            }}
-                            className="text-[10px] font-bold bg-rose-600 hover:bg-rose-500 text-white px-2 py-0.5 rounded cursor-pointer"
-                          >
-                            معاينة الشجرة
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => {
+                            onSelectTreeById?.('tr-003');
+                            setIsNotificationsOpen(false);
+                          }}
+                          className="mt-1 text-[10px] font-bold bg-rose-600 hover:bg-rose-500 text-white px-2 py-0.5 rounded cursor-pointer"
+                        >
+                          معاينة الشجرة
+                        </button>
                       </div>
 
-                      {/* Alert Item 2: Upcoming Animal Vaccination */}
                       <div className="p-2.5 rounded-xl bg-amber-950/50 border border-amber-800/60 text-xs space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="font-extrabold text-amber-300 flex items-center gap-1.5">
                             <Syringe className="w-3.5 h-3.5 text-amber-400" />
                             موعد تلقيح بيطري قادم
                           </span>
-                          <span className="text-[9px] bg-amber-500/20 text-amber-200 px-1.5 py-0.2 rounded border border-amber-500/30">
-                            بيطرة
-                          </span>
                         </div>
                         <p className="text-[11px] text-amber-100">
-                          البقرة <strong>بيلا بريما (RFID-CTL-9021)</strong> مبرمج لها تلقيح ضد الكلوستريديا.
+                          البقرة <strong>بيلا بريما</strong> مبرمج لها تلقيح.
                         </p>
-                        <div className="flex items-center gap-2 pt-1">
-                          <button
-                            onClick={() => {
-                              onSelectAnimalById?.('lstk-001');
-                              setIsNotificationsOpen(false);
-                            }}
-                            className="text-[10px] font-bold bg-amber-600 hover:bg-amber-500 text-stone-900 px-2 py-0.5 rounded cursor-pointer"
-                          >
-                            السجل البيطري
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => {
+                            onSelectAnimalById?.('lstk-001');
+                            setIsNotificationsOpen(false);
+                          }}
+                          className="mt-1 text-[10px] font-bold bg-amber-600 hover:bg-amber-500 text-stone-900 px-2 py-0.5 rounded cursor-pointer"
+                        >
+                          السجل البيطري
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -242,61 +228,48 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
 
-            {/* AI Button - Small on mobile, Full on larger screens */}
+            {/* AI Action Button */}
             <button
               onClick={onOpenAiScanner}
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg bg-[#8B4513] hover:bg-[#A0522D] text-amber-50 text-[11px] sm:text-xs font-bold shadow transition-colors cursor-pointer shrink-0"
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#8B4513] hover:bg-[#A0522D] text-amber-50 text-[11px] sm:text-xs font-bold shadow transition-colors cursor-pointer shrink-0"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-              <span className="hidden sm:inline">فحص فوري بالذكاء الاصطناعي</span>
+              <span className="hidden sm:inline">فحص بالذكاء الاصطناعي</span>
               <span className="sm:hidden">فحص AI</span>
             </button>
-
-            <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs text-emerald-100">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>ميلة: 142.5 هكتار</span>
-            </div>
           </div>
         </div>
 
-        {/* Mobile secondary tab bar - Scrollable */}
-        <div className="lg:hidden flex items-center gap-1.5 pb-2.5 overflow-x-auto border-t border-white/10 pt-2 text-[11px] no-scrollbar">
-          <button
-            onClick={() => setActiveTab('mobile_simulator')}
-            className={`px-2.5 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
-              activeTab === 'mobile_simulator' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100 bg-white/5'
-            }`}
-          >
-            تطبيق الهاتف (RTL)
-          </button>
+        {/* Mobile Sub-Navigation Bar - Streamlined WITHOUT Mobile Simulator */}
+        <div className="lg:hidden flex items-center gap-1.5 pb-2 overflow-x-auto border-t border-white/10 pt-2 text-[11px] no-scrollbar">
           <button
             onClick={() => setActiveTab('full_dashboard')}
-            className={`px-2.5 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
-              activeTab === 'full_dashboard' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100 bg-white/5'
+            className={`px-3 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
+              activeTab === 'full_dashboard' || activeTab === 'mobile_simulator' ? 'bg-white text-[#0F5132] font-bold shadow-sm' : 'text-emerald-100 bg-white/5'
             }`}
           >
             لوحة العمليات
           </button>
           <button
             onClick={() => setActiveTab('predictive_irrigation')}
-            className={`px-2.5 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
-              activeTab === 'predictive_irrigation' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100 bg-white/5'
+            className={`px-3 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
+              activeTab === 'predictive_irrigation' ? 'bg-white text-[#0F5132] font-bold shadow-sm' : 'text-emerald-100 bg-white/5'
             }`}
           >
             الري التنبؤي
           </button>
           <button
             onClick={() => setActiveTab('resource_consumption')}
-            className={`px-2.5 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
-              activeTab === 'resource_consumption' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100 bg-white/5'
+            className={`px-3 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
+              activeTab === 'resource_consumption' ? 'bg-white text-[#0F5132] font-bold shadow-sm' : 'text-emerald-100 bg-white/5'
             }`}
           >
             مراقبة الموارد
           </button>
           <button
             onClick={() => setActiveTab('weekly_summary')}
-            className={`px-2.5 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
-              activeTab === 'weekly_summary' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100 bg-white/5'
+            className={`px-3 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
+              activeTab === 'weekly_summary' ? 'bg-white text-[#0F5132] font-bold shadow-sm' : 'text-emerald-100 bg-white/5'
             }`}
           >
             التقرير الأسبوعي
@@ -304,7 +277,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setActiveTab('step1_sql')}
             className={`px-2.5 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
-              activeTab === 'step1_sql' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100 bg-white/5'
+              activeTab === 'step1_sql' ? 'bg-white text-[#0F5132] font-bold shadow-sm' : 'text-emerald-100 bg-white/5'
             }`}
           >
             SQL
@@ -312,7 +285,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setActiveTab('step2_express')}
             className={`px-2.5 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
-              activeTab === 'step2_express' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100 bg-white/5'
+              activeTab === 'step2_express' ? 'bg-white text-[#0F5132] font-bold shadow-sm' : 'text-emerald-100 bg-white/5'
             }`}
           >
             API
@@ -320,7 +293,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setActiveTab('step3_flutter')}
             className={`px-2.5 py-1 rounded-md whitespace-nowrap font-medium transition-all ${
-              activeTab === 'step3_flutter' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100 bg-white/5'
+              activeTab === 'step3_flutter' ? 'bg-white text-[#0F5132] font-bold shadow-sm' : 'text-emerald-100 bg-white/5'
             }`}
           >
             Flutter
