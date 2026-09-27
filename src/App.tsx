@@ -37,9 +37,9 @@ import { fetchLiveMilaWeather, LiveWeatherData } from './services/weatherService
 
 export default function App() {
   // Navigation & View Mode
-  const [activeTab, setActiveTab] = useState<
-    'mobile_simulator' | 'full_dashboard' | 'predictive_irrigation' | 'resource_consumption' | 'weekly_summary' | 'step1_sql' | 'step2_express' | 'step3_flutter'
-  >('mobile_simulator');
+  const // ✅ استبدله بهذا السطر:
+const [activeTab, setActiveTab] = useState<'mobile_simulator' | 'full_dashboard' | 'predictive_irrigation' | 'resource_consumption' | 'weekly_summary' | 'step1_sql' | 'step2_express' | 'step3_flutter'>('full_dashboard');
+
 
   // Application Data State
   const [farm, setFarm] = useState<Farm>(INITIAL_FARM);
