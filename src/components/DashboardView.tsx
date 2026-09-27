@@ -21,7 +21,8 @@ import {
   Fuel,
   Tractor,
   Sprout,
-  BarChart3
+  BarChart3,
+  FileText
 } from 'lucide-react';
 import { Farm, Tree, LivestockAnimal, TraceabilityBatch } from '../types';
 import { LiveWeatherData } from '../services/weatherService';
@@ -40,6 +41,7 @@ interface DashboardViewProps {
   onTriggerLivestockAlert?: () => void;
   onNavigateToPredictiveIrrigation?: () => void;
   onNavigateToResourceConsumption?: () => void;
+  onNavigateToWeeklySummary?: () => void;
   liveWeather?: LiveWeatherData | null;
   onRefreshWeather?: () => Promise<void>;
   isWeatherLoading?: boolean;
@@ -59,6 +61,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onTriggerLivestockAlert,
   onNavigateToPredictiveIrrigation,
   onNavigateToResourceConsumption,
+  onNavigateToWeeklySummary,
   liveWeather,
   onRefreshWeather,
   isWeatherLoading = false,
@@ -559,6 +562,88 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
             <div className="font-black text-emerald-400 text-xs sm:text-sm mt-0.5">4 آليات نشطة</div>
             <div className="text-[10px] text-stone-400">جاهزية 83%</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2.7 AUTOMATED WEEKLY AGRONOMIC SUMMARY BANNER */}
+      <div className="bg-gradient-to-r from-[#072416] via-[#0F5132] to-[#165B37] text-white rounded-2xl p-4 sm:p-5 border border-emerald-700/80 shadow-lg relative overflow-hidden">
+        {/* Decorative background watermark */}
+        <div className="absolute left-3 -bottom-6 opacity-10 pointer-events-none select-none">
+          <FileText className="w-36 h-36 text-emerald-200" />
+        </div>
+
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+          <div className="flex items-start gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-[#A3E635]/20 text-[#A3E635] border border-[#A3E635]/40 flex items-center justify-center shrink-0 shadow-inner">
+              <FileText className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-extrabold text-sm sm:text-base text-white">
+                  التقرير الزراعي الأسبوعي الآلي (Automated Weekly Agronomic Summary)
+                </h3>
+                <span className="text-[10px] font-black bg-[#A3E635] text-[#0F5132] px-2.5 py-0.5 rounded-full shadow-xs">
+                  الأسبوع 39 • معتمد (A+ 93.8/100)
+                </span>
+                <span className="text-[10px] font-bold bg-white/10 text-emerald-200 px-2 py-0.5 rounded-full border border-white/10">
+                  جاهز للطباعة والتحميل كـ PDF
+                </span>
+              </div>
+              <p className="text-xs text-emerald-100/90 mt-1 max-w-2xl leading-relaxed">
+                تجميع ذكي شامل لبيانات صحة أشجار الزيتون (NDVI ومؤشر السلامة 89.9%)، تغيرات أوزان الماشية ومعدل النمو اليومي (+485 غ/يوم)، ومؤشرات كفاءة استهلاك المياه والأسمدة والديزل، موثق بتوقيع المهندس الزراعي المشرف.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={onNavigateToWeeklySummary}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#A3E635] hover:bg-[#91ce2b] text-[#0F5132] font-black text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              <span>معاينة وتحميل التقرير الكامل PDF</span>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Summary Highlight Pills */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-3 border-t border-emerald-700/60 text-xs relative z-10">
+          <div className="bg-black/20 backdrop-blur-xs rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-emerald-300 flex items-center justify-center gap-1 font-bold">
+              <Trees className="w-3 h-3" />
+              <span>صحة الأشجار</span>
+            </div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">89.9% ممتازة</div>
+            <div className="text-[10px] text-emerald-200">مؤشر NDVI: 0.84</div>
+          </div>
+
+          <div className="bg-black/20 backdrop-blur-xs rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-amber-300 flex items-center justify-center gap-1 font-bold">
+              <Activity className="w-3 h-3" />
+              <span>نمو الماشية (ADG)</span>
+            </div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">+485 غرام/يوم</div>
+            <div className="text-[10px] text-amber-200">+2,840 كغ للأسبوع</div>
+          </div>
+
+          <div className="bg-black/20 backdrop-blur-xs rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-cyan-300 flex items-center justify-center gap-1 font-bold">
+              <Droplets className="w-3 h-3" />
+              <span>ترشيد المياه</span>
+            </div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">وفر 116 م³</div>
+            <div className="text-[10px] text-cyan-200">28.5% ترشيد FAO-56</div>
+          </div>
+
+          <div className="bg-black/20 backdrop-blur-xs rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-stone-200 flex items-center justify-center gap-1 font-bold">
+              <Fuel className="w-3 h-3 text-amber-400" />
+              <span>ديزل الآلات الفلاحية</span>
+            </div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">198.5 لتر</div>
+            <div className="text-[10px] text-stone-300">4.71 لتر/ساعة تشغيل</div>
           </div>
         </div>
       </div>

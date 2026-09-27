@@ -242,3 +242,135 @@ export interface OrchardParcelStatus {
   activeMachinery: string[];
   healthScorePct: number;
 }
+
+export interface ParcelAgronomicMetric {
+  parcelId: string;
+  parcelName: string;
+  arabicName: string;
+  cropVariety: string;
+  treeCount: number;
+  healthScorePct: number;
+  ndviVigorIndex: number;
+  avgSoilMoisturePct: number;
+  waterAppliedM3: number;
+  waterDeficitM3: number;
+  fertilizerNpkKg: number;
+  activeTreatments: string;
+  status: 'optimal' | 'attention' | 'critical';
+}
+
+export interface PhytosanitaryIntervention {
+  id: string;
+  date: string;
+  parcelZone: string;
+  targetPathogen: string;
+  treatmentProduct: string;
+  dosage: string;
+  applicationMethod: string;
+  agronomistApproval: string;
+  status: 'completed' | 'in_progress' | 'scheduled';
+}
+
+export interface LivestockWeightChangeRecord {
+  id: string;
+  tagRfid: string;
+  nameOrAlias: string;
+  species: 'cattle' | 'sheep';
+  breed: string;
+  pastureZone: string;
+  previousWeightKg: number;
+  currentWeightKg: number;
+  weightChangeKg: number;
+  weightChangePct: number;
+  adgGramsDay: number; // Average Daily Gain
+  bodyConditionScore: number; // Scale 1.0 to 5.0
+  healthCondition: string;
+  yieldInfo?: string;
+}
+
+export interface ResourceEfficiencyMetric {
+  resourceType: 'water' | 'fertilizer' | 'diesel';
+  nameArabic: string;
+  totalConsumed: number;
+  unit: string;
+  targetBenchmark: number;
+  efficiencyPct: number;
+  savingsVsBaseline: number;
+  savingsUnit: string;
+  costDzd: number;
+  costPerHectareDzd: number;
+  carbonImpactKgCo2: number;
+  statusNote: string;
+}
+
+export interface AgronomicActionItem {
+  id: string;
+  priority: 'high' | 'medium' | 'routine';
+  category: 'tree_health' | 'livestock' | 'irrigation' | 'machinery';
+  title: string;
+  description: string;
+  targetParcelOrSector: string;
+  deadlineDate: string;
+  assignedEngineer: string;
+  status: 'pending' | 'in_progress' | 'completed';
+}
+
+export interface WeeklyAgronomicReport {
+  reportId: string;
+  weekNumber: number;
+  year: number;
+  startDate: string;
+  endDate: string;
+  generatedDate: string;
+  estateName: string;
+  estateRegion: string;
+  estateHectares: number;
+  supervisingAgronomist: {
+    name: string;
+    title: string;
+    licenseNumber: string;
+    digitalSignatureHash: string;
+  };
+  overallAgronomicScore: number;
+  overallRatingLabel: string;
+  executiveSummary: string;
+  weatherSummary: {
+    avgTemperatureC: number;
+    rainfallAccumulatedMm: number;
+    et0ReferenceMm: number;
+    solarRadiationAvg: string;
+  };
+  treeHealthSection: {
+    totalTrees: number;
+    healthyCount: number;
+    needsAttentionCount: number;
+    diseasedCount: number;
+    overallHealthPct: number;
+    avgNdviScore: number;
+    parcels: ParcelAgronomicMetric[];
+    phytosanitaryInterventions: PhytosanitaryIntervention[];
+  };
+  livestockSection: {
+    totalLivestock: number;
+    cattleCount: number;
+    sheepCount: number;
+    avgDailyGainGrams: number;
+    totalFlockGainKg: number;
+    avgBcsScore: number;
+    dailyMilkYieldLiters: number;
+    veterinaryCompliancePct: number;
+    animals: LivestockWeightChangeRecord[];
+    feedEfficiencySummary: string;
+  };
+  resourceEfficiencySection: {
+    totalWaterM3: number;
+    totalFertilizerKg: number;
+    totalDieselLiters: number;
+    totalOperatingHours: number;
+    totalOperatingCostDzd: number;
+    overallEfficiencyIndex: number;
+    carbonOffsetKgCo2: number;
+    metrics: ResourceEfficiencyMetric[];
+  };
+  actionItems: AgronomicActionItem[];
+}

@@ -15,6 +15,7 @@ import { TraceabilityModal } from './components/TraceabilityModal';
 import { ToastContainer, playNotificationSound } from './components/ToastContainer';
 import { PredictiveIrrigationView } from './components/PredictiveIrrigationView';
 import { ResourceConsumptionView } from './components/ResourceConsumptionView';
+import { WeeklyAgronomicSummaryView } from './components/WeeklyAgronomicSummaryView';
 import {
   INITIAL_FARM,
   INITIAL_TREES,
@@ -37,7 +38,7 @@ import { fetchLiveMilaWeather, LiveWeatherData } from './services/weatherService
 export default function App() {
   // Navigation & View Mode
   const [activeTab, setActiveTab] = useState<
-    'mobile_simulator' | 'full_dashboard' | 'predictive_irrigation' | 'resource_consumption' | 'step1_sql' | 'step2_express' | 'step3_flutter'
+    'mobile_simulator' | 'full_dashboard' | 'predictive_irrigation' | 'resource_consumption' | 'weekly_summary' | 'step1_sql' | 'step2_express' | 'step3_flutter'
   >('mobile_simulator');
 
   // Application Data State
@@ -449,6 +450,7 @@ export default function App() {
             onDismissAlert={dismissToast}
             onNavigateToPredictiveIrrigation={() => setActiveTab('predictive_irrigation')}
             onNavigateToResourceConsumption={() => setActiveTab('resource_consumption')}
+            onNavigateToWeeklySummary={() => setActiveTab('weekly_summary')}
             liveWeather={liveWeather}
             onRefreshWeather={() => refreshWeather(true)}
             isWeatherLoading={isWeatherLoading}
@@ -470,6 +472,7 @@ export default function App() {
             onTriggerLivestockAlert={() => triggerLivestockAlert()}
             onNavigateToPredictiveIrrigation={() => setActiveTab('predictive_irrigation')}
             onNavigateToResourceConsumption={() => setActiveTab('resource_consumption')}
+            onNavigateToWeeklySummary={() => setActiveTab('weekly_summary')}
             liveWeather={liveWeather}
             onRefreshWeather={() => refreshWeather(true)}
             isWeatherLoading={isWeatherLoading}
@@ -504,6 +507,25 @@ export default function App() {
             onAddConsumptionLog={handleAddConsumptionLog}
             onUpdateMachineryStatus={handleUpdateMachineryStatus}
             onSelectTree={(tree) => setSelectedTree(tree)}
+            onShowToast={(title, message, type) => {
+              addToast({
+                type,
+                category: 'system',
+                title,
+                message,
+              });
+            }}
+          />
+        )}
+
+        {activeTab === 'weekly_summary' && (
+          <WeeklyAgronomicSummaryView
+            farm={farm}
+            trees={trees}
+            livestock={livestock}
+            consumptionLogs={consumptionLogs}
+            onSelectTree={(tree) => setSelectedTree(tree)}
+            onSelectAnimal={(animal) => setSelectedAnimal(animal)}
             onShowToast={(title, message, type) => {
               addToast({
                 type,

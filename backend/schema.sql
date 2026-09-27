@@ -396,3 +396,50 @@ VALUES
 ('00000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', CURRENT_DATE, 'Grove Alpha (Ancient Centenarians)', 'حرث سطحي وتهوية جذور الزيتون المعمر', 4.5, 35.0, 36.8, 4.5, 1840, 'عمر بوقرة', 'تمت تهوية المسافات البينية مع حقن هيومات بوتاسيوم'),
 ('00000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000004', CURRENT_DATE, 'Grove Gamma (Hedgerow)', 'رش وقائي لمستحضر بكتيري حيوي (Bacillus)', 16.0, 12.5, 17.2, 3.2, 860, 'سفيان دراجي', 'مكافحة فطرية بيولوجية موجهة ضد الأنثراكنوز'),
 ('00000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000005', CURRENT_DATE, 'Grove Beta (Modern High-Yield)', 'دورة ري وتسميد ذائب (Fertigation NPK)', 38.0, 28.0, 18.6, 6.0, 930, 'م. رشيد عثمان', 'استغلال الطاقة الشمسية 75% مع مساندة الديزل');
+
+-- ----------------------------------------------------------------------------
+-- 9. AUTOMATED WEEKLY AGRONOMIC SUMMARIES TABLE
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS weekly_agronomic_summaries (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    farm_id UUID NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+    report_code VARCHAR(60) UNIQUE NOT NULL,            -- e.g. "SOL-RPT-2026-W39-MILA"
+    week_number INT NOT NULL CHECK (week_number >= 1 AND week_number <= 53),
+    report_year INT NOT NULL DEFAULT 2026,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    overall_score NUMERIC(4, 1) NOT NULL,               -- e.g. 93.8
+    rating_label VARCHAR(60) NOT NULL,                  -- 'أداء زراعي متميز (A+)'
+    executive_summary TEXT NOT NULL,
+    supervising_agronomist VARCHAR(150) NOT NULL,
+    agronomist_license VARCHAR(60),
+    digital_signature_hash VARCHAR(128),
+    tree_health_kpis JSONB NOT NULL DEFAULT '{}'::jsonb,
+    livestock_growth_kpis JSONB NOT NULL DEFAULT '{}'::jsonb,
+    resource_efficiency_kpis JSONB NOT NULL DEFAULT '{}'::jsonb,
+    action_items JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_weekly_reports_farm_week ON weekly_agronomic_summaries(farm_id, report_year, week_number);
+
+-- Seed Week 39 Agronomic Report Record
+INSERT INTO weekly_agronomic_summaries (
+    id, farm_id, report_code, week_number, report_year, start_date, end_date,
+    overall_score, rating_label, executive_summary, supervising_agronomist,
+    agronomist_license, digital_signature_hash
+) VALUES (
+    '00000000-0000-0000-0000-000000000010',
+    'b0000000-0000-0000-0000-000000000001',
+    'SOL-RPT-2026-W39-MILA',
+    39,
+    2026,
+    '2026-09-21',
+    '2026-09-27',
+    93.8,
+    'أداء زراعي متميز (A+)',
+    'استقرار فيزيولوجي استثنائي لحقول الزيتون بحوض بني هارون مع تقليص الإجهاد المائي بنسبة 28.5% بفضل الري التنبؤي الذكي، وزيادة يومية للأوزان الحيوانية بمعدل 485 غرام/رأس.',
+    'د. سليم بن عثمان',
+    'AGR-DZ-MILA-2016/0942',
+    'SHA256:7f4a9b8c12e5d90e4f2a71c8901bca4409ef32a11b897645eacb90812'
+) ON CONFLICT (report_code) DO NOTHING;

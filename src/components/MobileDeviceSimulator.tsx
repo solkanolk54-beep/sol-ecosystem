@@ -12,7 +12,8 @@ import {
   AlertOctagon,
   Syringe,
   X,
-  ChevronLeft
+  ChevronLeft,
+  FileText
 } from 'lucide-react';
 import { Farm, Tree, LivestockAnimal, TraceabilityBatch, ToastNotificationItem } from '../types';
 import { LiveWeatherData } from '../services/weatherService';
@@ -33,6 +34,7 @@ interface MobileDeviceSimulatorProps {
   onDismissAlert?: (id: string) => void;
   onNavigateToPredictiveIrrigation?: () => void;
   onNavigateToResourceConsumption?: () => void;
+  onNavigateToWeeklySummary?: () => void;
   liveWeather?: LiveWeatherData | null;
   onRefreshWeather?: () => Promise<void>;
   isWeatherLoading?: boolean;
@@ -53,6 +55,7 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
   onDismissAlert,
   onNavigateToPredictiveIrrigation,
   onNavigateToResourceConsumption,
+  onNavigateToWeeklySummary,
   liveWeather,
   onRefreshWeather,
   isWeatherLoading = false,
@@ -102,13 +105,22 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
               </div>
             </div>
 
-            <button
-              onClick={onOpenAiScanner}
-              className="p-1.5 rounded-full bg-[#8B4513] text-white hover:bg-[#A0522D] transition-colors shadow-xs cursor-pointer"
-              title="فحص فوري بالذكاء الاصطناعي"
-            >
-              <Camera className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={onNavigateToWeeklySummary}
+                className="p-1.5 rounded-full bg-white/10 text-emerald-300 hover:bg-white/20 transition-colors shadow-xs cursor-pointer"
+                title="التقرير الزراعي الأسبوعي (PDF)"
+              >
+                <FileText className="w-4 h-4" />
+              </button>
+              <button
+                onClick={onOpenAiScanner}
+                className="p-1.5 rounded-full bg-[#8B4513] text-white hover:bg-[#A0522D] transition-colors shadow-xs cursor-pointer"
+                title="فحص فوري بالذكاء الاصطناعي"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* In-Device Real-time Push Notification Banner (Material 3 Heads-up Notification) */}
@@ -173,6 +185,7 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
               onTriggerLivestockAlert={onTriggerLivestockAlert}
               onNavigateToPredictiveIrrigation={onNavigateToPredictiveIrrigation}
               onNavigateToResourceConsumption={onNavigateToResourceConsumption}
+              onNavigateToWeeklySummary={onNavigateToWeeklySummary}
               liveWeather={liveWeather}
               onRefreshWeather={onRefreshWeather}
               isWeatherLoading={isWeatherLoading}
