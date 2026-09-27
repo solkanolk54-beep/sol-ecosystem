@@ -176,3 +176,69 @@ export interface ParcelIrrigationMetrics {
   sensorReadings24h: { hour: string; moisturePct: number }[];
   valveStatus: 'idle' | 'running' | 'scheduled';
 }
+
+export type MachineryCategory = 'tractor' | 'harvester' | 'sprayer' | 'irrigation_pump' | 'shredder';
+
+export interface FarmMachinery {
+  id: string;
+  name: string;
+  model: string;
+  category: MachineryCategory;
+  enginePowerHp: number;
+  fuelCapacityLiters: number;
+  currentFuelLevelPct: number;
+  efficiencyLitersPerHour: number;
+  status: 'operating' | 'idle' | 'maintenance' | 'refueling';
+  assignedParcel: string;
+  currentOperator: string;
+  totalOperatingHours: number;
+  todayOperatingHours: number;
+  lastMaintenanceDate: string;
+  iconType: 'tractor' | 'harvester' | 'sprayer' | 'pump' | 'shredder';
+}
+
+export interface ResourceConsumptionLog {
+  id: string;
+  date: string;
+  machineryId: string;
+  machineryName: string;
+  parcelZone: string;
+  activityType: string;
+  waterM3: number;
+  fertilizerKg: number;
+  dieselLiters: number;
+  operatingHours: number;
+  fuelEfficiencyLitersPerHour: number;
+  costDzd: number;
+  operator: string;
+  notes?: string;
+}
+
+export interface DailyResourceSummary {
+  date: string;
+  dayLabel: string;
+  waterM3: number;
+  fertilizerKg: number;
+  dieselLiters: number;
+  totalHours: number;
+  activeMachineryCount: number;
+  costDzd: number;
+}
+
+export interface OrchardParcelStatus {
+  parcelId: string;
+  parcelName: string;
+  arabicName: string;
+  species: string;
+  totalTrees: number;
+  healthyTrees: number;
+  needsAttentionTrees: number;
+  diseasedTrees: number;
+  avgSoilMoisturePct: number;
+  irrigationStatus: 'optimal' | 'deficit' | 'overirrigated' | 'scheduled';
+  lastWaterAppliedM3: number;
+  lastFertilizerAppliedKg: number;
+  recentDieselUsageLiters: number;
+  activeMachinery: string[];
+  healthScorePct: number;
+}

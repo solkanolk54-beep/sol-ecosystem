@@ -17,7 +17,11 @@ import {
   RefreshCw,
   CloudRain,
   Cloud,
-  Wind
+  Wind,
+  Fuel,
+  Tractor,
+  Sprout,
+  BarChart3
 } from 'lucide-react';
 import { Farm, Tree, LivestockAnimal, TraceabilityBatch } from '../types';
 import { LiveWeatherData } from '../services/weatherService';
@@ -35,6 +39,7 @@ interface DashboardViewProps {
   onTriggerTreeAlert?: () => void;
   onTriggerLivestockAlert?: () => void;
   onNavigateToPredictiveIrrigation?: () => void;
+  onNavigateToResourceConsumption?: () => void;
   liveWeather?: LiveWeatherData | null;
   onRefreshWeather?: () => Promise<void>;
   isWeatherLoading?: boolean;
@@ -53,6 +58,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onTriggerTreeAlert,
   onTriggerLivestockAlert,
   onNavigateToPredictiveIrrigation,
+  onNavigateToResourceConsumption,
   liveWeather,
   onRefreshWeather,
   isWeatherLoading = false,
@@ -483,6 +489,76 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="text-[10px] text-amber-300">مدرجات التين السلطاني</div>
             <div className="font-black text-white text-xs sm:text-sm mt-0.5">26.5% رطوبة</div>
             <div className="text-[10px] text-amber-300 font-bold">⚠️ اقتراب العتبة • غداً</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2.6 RESOURCE CONSUMPTION MONITOR BANNER */}
+      <div className="bg-gradient-to-r from-stone-900 via-stone-900 to-stone-950 text-white rounded-2xl p-4 sm:p-5 border border-stone-800 shadow-md">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+              <Fuel className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-extrabold text-sm sm:text-base text-white">
+                  مراقبة استهلاك الموارد لأسطول الآلات (مياه • أسمدة • ديزل)
+                </h3>
+                <span className="text-[10px] font-bold bg-amber-400 text-stone-950 px-2 py-0.5 rounded-full">
+                  تتبع يومي متزامن مع حالة البستان
+                </span>
+              </div>
+              <p className="text-xs text-stone-300 mt-1 max-w-2xl leading-relaxed">
+                متابعة دقيقة لاستهلاك وقود الديزل (لتر)، مياه الرش والسقي (م³)، والأسمدة الكيماوية والعضوية (كغ) لأسطول الجرارات والمرشات وحصادات الزيتون، مع رسوم بيانية مقارنة لمردودية كل قطعة شجرية.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={onNavigateToResourceConsumption}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <span>فتح وحدة مراقبة الموارد والرسوم البيانية</span>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Resource Summary Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-3 border-t border-stone-800 text-xs">
+          <div className="bg-stone-800/60 rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-cyan-300 flex items-center justify-center gap-1">
+              <Droplets className="w-3 h-3" />
+              <span>مياه السقي اليوم</span>
+            </div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">58.5 م³</div>
+            <div className="text-[10px] text-stone-400">ري تقطير مقتصد</div>
+          </div>
+          <div className="bg-stone-800/60 rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-emerald-300 flex items-center justify-center gap-1">
+              <Sprout className="w-3 h-3" />
+              <span>الأسمدة المطبقة</span>
+            </div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">75.5 كغ</div>
+            <div className="text-[10px] text-stone-400">تسميد عضوي NPK</div>
+          </div>
+          <div className="bg-stone-800/60 rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-amber-300 flex items-center justify-center gap-1">
+              <Fuel className="w-3 h-3" />
+              <span>وقود الديزل اليوم</span>
+            </div>
+            <div className="font-black text-white text-xs sm:text-sm mt-0.5">72.6 لتر</div>
+            <div className="text-[10px] text-stone-400">13.7 س تشغيل</div>
+          </div>
+          <div className="bg-stone-800/60 rounded-xl p-2.5 text-center">
+            <div className="text-[10px] text-stone-300 flex items-center justify-center gap-1">
+              <Tractor className="w-3 h-3 text-emerald-400" />
+              <span>الآلات في الميدان</span>
+            </div>
+            <div className="font-black text-emerald-400 text-xs sm:text-sm mt-0.5">4 آليات نشطة</div>
+            <div className="text-[10px] text-stone-400">جاهزية 83%</div>
           </div>
         </div>
       </div>

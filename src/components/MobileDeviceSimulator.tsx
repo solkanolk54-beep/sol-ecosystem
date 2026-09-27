@@ -32,6 +32,7 @@ interface MobileDeviceSimulatorProps {
   activeAlert?: ToastNotificationItem | null;
   onDismissAlert?: (id: string) => void;
   onNavigateToPredictiveIrrigation?: () => void;
+  onNavigateToResourceConsumption?: () => void;
   liveWeather?: LiveWeatherData | null;
   onRefreshWeather?: () => Promise<void>;
   isWeatherLoading?: boolean;
@@ -51,6 +52,7 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
   activeAlert,
   onDismissAlert,
   onNavigateToPredictiveIrrigation,
+  onNavigateToResourceConsumption,
   liveWeather,
   onRefreshWeather,
   isWeatherLoading = false,
@@ -170,6 +172,7 @@ export const MobileDeviceSimulator: React.FC<MobileDeviceSimulatorProps> = ({
               onTriggerTreeAlert={onTriggerTreeAlert}
               onTriggerLivestockAlert={onTriggerLivestockAlert}
               onNavigateToPredictiveIrrigation={onNavigateToPredictiveIrrigation}
+              onNavigateToResourceConsumption={onNavigateToResourceConsumption}
               liveWeather={liveWeather}
               onRefreshWeather={onRefreshWeather}
               isWeatherLoading={isWeatherLoading}

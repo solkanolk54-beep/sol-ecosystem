@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Sprout, Smartphone, Monitor, Database, Server, Code, Sparkles, Bell, AlertOctagon, Syringe, CheckCircle2, Droplets } from 'lucide-react';
+import { Sprout, Smartphone, Monitor, Database, Server, Code, Sparkles, Bell, AlertOctagon, Syringe, CheckCircle2, Droplets, Fuel } from 'lucide-react';
 import { ToastNotificationItem } from '../types';
 import { ThemeToggle } from './ThemeToggle';
 
 interface NavbarProps {
-  activeTab: 'mobile_simulator' | 'full_dashboard' | 'predictive_irrigation' | 'step1_sql' | 'step2_express' | 'step3_flutter';
-  setActiveTab: (tab: 'mobile_simulator' | 'full_dashboard' | 'predictive_irrigation' | 'step1_sql' | 'step2_express' | 'step3_flutter') => void;
+  activeTab: 'mobile_simulator' | 'full_dashboard' | 'predictive_irrigation' | 'resource_consumption' | 'step1_sql' | 'step2_express' | 'step3_flutter';
+  setActiveTab: (tab: 'mobile_simulator' | 'full_dashboard' | 'predictive_irrigation' | 'resource_consumption' | 'step1_sql' | 'step2_express' | 'step3_flutter') => void;
   onOpenAiScanner: () => void;
   activeAlertCount?: number;
   recentAlerts?: ToastNotificationItem[];
@@ -84,6 +84,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Droplets className="w-3.5 h-3.5 text-cyan-300" />
               الري التنبؤي الذكي (FAO-56)
+            </button>
+            <button
+              onClick={() => setActiveTab('resource_consumption')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'resource_consumption'
+                  ? 'bg-white text-[#0F5132] shadow-sm font-bold'
+                  : 'text-emerald-100 hover:bg-white/10'
+              }`}
+            >
+              <Fuel className="w-3.5 h-3.5 text-amber-300" />
+              مراقبة استهلاك الموارد (الآلات)
             </button>
             <button
               onClick={() => setActiveTab('step1_sql')}
@@ -291,6 +302,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             الري التنبؤي
+          </button>
+          <button
+            onClick={() => setActiveTab('resource_consumption')}
+            className={`px-2.5 py-1 rounded whitespace-nowrap font-medium ${
+              activeTab === 'resource_consumption' ? 'bg-white text-[#0F5132] font-bold' : 'text-emerald-100'
+            }`}
+          >
+            مراقبة الموارد
           </button>
           <button
             onClick={() => setActiveTab('step1_sql')}

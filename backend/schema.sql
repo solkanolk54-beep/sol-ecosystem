@@ -243,7 +243,70 @@ CREATE TABLE IF NOT EXISTS harvest_records (
 );
 
 -- ----------------------------------------------------------------------------
--- 8. INDEXES FOR HIGH-PERFORMANCE QUERYING
+-- 8. FARM MACHINERY & RESOURCE CONSUMPTION MONITORING
+-- ----------------------------------------------------------------------------
+DO $$ BEGIN
+    CREATE TYPE machinery_category_enum AS ENUM (
+        'tractor',
+        'harvester',
+        'sprayer',
+        'irrigation_pump',
+        'shredder'
+    );
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE machinery_status_enum AS ENUM (
+        'operating',
+        'idle',
+        'maintenance',
+        'refueling'
+    );
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+CREATE TABLE IF NOT EXISTS farm_machinery (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    farm_id UUID NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+    code VARCHAR(50) UNIQUE NOT NULL,                   -- e.g. "MCH-01"
+    name VARCHAR(150) NOT NULL,
+    model VARCHAR(150) NOT NULL,
+    category machinery_category_enum NOT NULL DEFAULT 'tractor',
+    engine_power_hp INT NOT NULL,
+    fuel_capacity_liters NUMERIC(6, 2) NOT NULL,
+    current_fuel_level_pct NUMERIC(5, 2) DEFAULT 80.0,
+    efficiency_liters_per_hour NUMERIC(5, 2) NOT NULL,
+    status machinery_status_enum NOT NULL DEFAULT 'idle',
+    assigned_parcel VARCHAR(100),
+    current_operator VARCHAR(150),
+    total_operating_hours NUMERIC(8, 2) DEFAULT 0.0,
+    last_maintenance_date DATE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS resource_consumption_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    farm_id UUID NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+    machinery_id UUID REFERENCES farm_machinery(id) ON DELETE SET NULL,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    parcel_zone VARCHAR(100) NOT NULL,
+    activity_type VARCHAR(200) NOT NULL,
+    water_m3 NUMERIC(8, 2) NOT NULL DEFAULT 0.00,
+    fertilizer_kg NUMERIC(8, 2) NOT NULL DEFAULT 0.00,
+    diesel_liters NUMERIC(8, 2) NOT NULL DEFAULT 0.00,
+    operating_hours NUMERIC(5, 2) NOT NULL DEFAULT 1.0,
+    fuel_efficiency_lph NUMERIC(5, 2) GENERATED ALWAYS AS (
+        CASE WHEN operating_hours > 0 THEN ROUND((diesel_liters / operating_hours)::numeric, 2) ELSE 0 END
+    ) STORED,
+    cost_dzd NUMERIC(10, 2) DEFAULT 0.00,
+    operator_name VARCHAR(150) NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ----------------------------------------------------------------------------
+-- 9. INDEXES FOR HIGH-PERFORMANCE QUERYING
 -- ----------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_farms_owner ON farms(owner_id);
@@ -255,9 +318,12 @@ CREATE INDEX IF NOT EXISTS idx_health_logs_tree ON health_logs(tree_id) WHERE tr
 CREATE INDEX IF NOT EXISTS idx_health_logs_livestock ON health_logs(livestock_id) WHERE livestock_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_health_logs_inspection_date ON health_logs(inspection_date DESC);
 CREATE INDEX IF NOT EXISTS idx_harvest_batch_code ON harvest_records(batch_code);
+CREATE INDEX IF NOT EXISTS idx_machinery_farm_status ON farm_machinery(farm_id, status);
+CREATE INDEX IF NOT EXISTS idx_resource_logs_date ON resource_consumption_logs(farm_id, log_date DESC);
+CREATE INDEX IF NOT EXISTS idx_resource_logs_machinery ON resource_consumption_logs(machinery_id);
 
 -- ----------------------------------------------------------------------------
--- 9. AUTO-UPDATE TIMESTAMP TRIGGER FUNCTION
+-- 10. AUTO-UPDATE TIMESTAMP TRIGGER FUNCTION
 -- ----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -274,6 +340,8 @@ DO $$ BEGIN
     CREATE TRIGGER trg_livestock_updated BEFORE UPDATE ON livestock FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     CREATE TRIGGER trg_health_logs_updated BEFORE UPDATE ON health_logs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     CREATE TRIGGER trg_harvest_records_updated BEFORE UPDATE ON harvest_records FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    CREATE TRIGGER trg_machinery_updated BEFORE UPDATE ON farm_machinery FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    CREATE TRIGGER trg_resource_logs_updated BEFORE UPDATE ON resource_consumption_logs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- ----------------------------------------------------------------------------
@@ -311,3 +379,20 @@ INSERT INTO harvest_records (id, farm_id, batch_code, product_type, product_comm
 VALUES
 ('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'BATCH-EVOO-2026-088', 'olive_oil', 'SOL Reserve Extra Virgin Olive Oil - Chemlali Cru', '2025-11-20', '2025-11-21', 4500.00, 'Liters', 'Extra Virgin Ultra-Premium', 0.185, 540, 'https://sol-ecosystem.agri/passport/BATCH-EVOO-2026-088')
 ON CONFLICT (batch_code) DO NOTHING;
+
+-- Seed Sample Farm Machinery Fleet
+INSERT INTO farm_machinery (id, farm_id, code, name, model, category, engine_power_hp, fuel_capacity_liters, current_fuel_level_pct, efficiency_liters_per_hour, status, assigned_parcel, current_operator, total_operating_hours)
+VALUES
+('f0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'MCH-01', 'جرار جون دير الذكي', 'John Deere 6120M Precision Ag', 'tractor', 120, 180.00, 78.0, 8.20, 'operating', 'Grove Alpha (Ancient Centenarians)', 'عمر بوقرة', 1420.0),
+('f0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', 'MCH-02', 'جرار كوبوتا البستاني الدقيق', 'Kubota M7-172 KVT Narrow', 'tractor', 170, 210.00, 62.0, 9.60, 'operating', 'Grove Beta (Modern High-Yield)', 'أمين شريف', 980.0),
+('f0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', 'MCH-03', 'حصادة وهزاز الزيتون بيلينك', 'Pellenc Buggy 5000 Trunk Shaker', 'harvester', 140, 160.00, 85.0, 11.20, 'idle', 'Grove Alpha (Ancient Centenarians)', 'كريم بلحاج', 640.0),
+('f0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000001', 'MCH-04', 'مرشة التوربين الهوائي كافيني', 'Caffini Booster 2000L Mist-Blower', 'sprayer', 65, 90.00, 70.0, 5.40, 'operating', 'Grove Gamma (Hedgerow)', 'سفيان دراجي', 810.0),
+('f0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000001', 'MCH-05', 'محطة الضخ والتسميد جروندفوس', 'Grundfos SQFlex Solar-Diesel Station', 'irrigation_pump', 25, 80.00, 92.0, 3.10, 'operating', 'Central Fertigation Hub (All Parcels)', 'م. رشيد عثمان', 3200.0)
+ON CONFLICT (code) DO NOTHING;
+
+-- Seed Sample Daily Resource Consumption Logs
+INSERT INTO resource_consumption_logs (id, farm_id, machinery_id, log_date, parcel_zone, activity_type, water_m3, fertilizer_kg, diesel_liters, operating_hours, cost_dzd, operator_name, notes)
+VALUES
+('00000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', CURRENT_DATE, 'Grove Alpha (Ancient Centenarians)', 'حرث سطحي وتهوية جذور الزيتون المعمر', 4.5, 35.0, 36.8, 4.5, 1840, 'عمر بوقرة', 'تمت تهوية المسافات البينية مع حقن هيومات بوتاسيوم'),
+('00000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000004', CURRENT_DATE, 'Grove Gamma (Hedgerow)', 'رش وقائي لمستحضر بكتيري حيوي (Bacillus)', 16.0, 12.5, 17.2, 3.2, 860, 'سفيان دراجي', 'مكافحة فطرية بيولوجية موجهة ضد الأنثراكنوز'),
+('00000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000005', CURRENT_DATE, 'Grove Beta (Modern High-Yield)', 'دورة ري وتسميد ذائب (Fertigation NPK)', 38.0, 28.0, 18.6, 6.0, 930, 'م. رشيد عثمان', 'استغلال الطاقة الشمسية 75% مع مساندة الديزل');

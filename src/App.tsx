@@ -14,19 +14,30 @@ import { AnimalDetailModal } from './components/AnimalDetailModal';
 import { TraceabilityModal } from './components/TraceabilityModal';
 import { ToastContainer, playNotificationSound } from './components/ToastContainer';
 import { PredictiveIrrigationView } from './components/PredictiveIrrigationView';
+import { ResourceConsumptionView } from './components/ResourceConsumptionView';
 import {
   INITIAL_FARM,
   INITIAL_TREES,
   INITIAL_LIVESTOCK,
-  INITIAL_BATCHES
+  INITIAL_BATCHES,
+  INITIAL_MACHINERY,
+  INITIAL_RESOURCE_LOGS
 } from './data/mockData';
-import { Farm, Tree, LivestockAnimal, TraceabilityBatch, ToastNotificationItem } from './types';
+import {
+  Farm,
+  Tree,
+  LivestockAnimal,
+  TraceabilityBatch,
+  ToastNotificationItem,
+  FarmMachinery,
+  ResourceConsumptionLog
+} from './types';
 import { fetchLiveMilaWeather, LiveWeatherData } from './services/weatherService';
 
 export default function App() {
   // Navigation & View Mode
   const [activeTab, setActiveTab] = useState<
-    'mobile_simulator' | 'full_dashboard' | 'predictive_irrigation' | 'step1_sql' | 'step2_express' | 'step3_flutter'
+    'mobile_simulator' | 'full_dashboard' | 'predictive_irrigation' | 'resource_consumption' | 'step1_sql' | 'step2_express' | 'step3_flutter'
   >('mobile_simulator');
 
   // Application Data State
@@ -34,6 +45,8 @@ export default function App() {
   const [trees, setTrees] = useState<Tree[]>(INITIAL_TREES);
   const [livestock, setLivestock] = useState<LivestockAnimal[]>(INITIAL_LIVESTOCK);
   const [batches] = useState<TraceabilityBatch[]>(INITIAL_BATCHES);
+  const [machinery, setMachinery] = useState<FarmMachinery[]>(INITIAL_MACHINERY);
+  const [consumptionLogs, setConsumptionLogs] = useState<ResourceConsumptionLog[]>(INITIAL_RESOURCE_LOGS);
 
   // Live Weather State for Mila, Algeria (Real-time Open-Meteo & OpenWeatherMap)
   const [liveWeather, setLiveWeather] = useState<LiveWeatherData | null>(null);
@@ -328,6 +341,72 @@ export default function App() {
     }
   };
 
+  // Machinery & Consumption Mutation: Log new consumption
+  const handleAddConsumptionLog = (newLogData: Omit<ResourceConsumptionLog, 'id'>) => {
+    const newId = `log-${newLogData.date}-${Date.now().toString(36).substr(2, 4)}`;
+    const newLog: ResourceConsumptionLog = {
+      ...newLogData,
+      id: newId
+    };
+
+    setConsumptionLogs((prev) => [newLog, ...prev]);
+
+    // Update machinery today operating hours & fuel level
+    setMachinery((prev) =>
+      prev.map((m) => {
+        if (m.id === newLog.machineryId) {
+          const fuelConsumedPct = (newLog.dieselLiters / m.fuelCapacityLiters) * 100;
+          const newFuelPct = Math.max(10, Math.round(m.currentFuelLevelPct - fuelConsumedPct));
+          return {
+            ...m,
+            todayOperatingHours: +(m.todayOperatingHours + newLog.operatingHours).toFixed(1),
+            totalOperatingHours: +(m.totalOperatingHours + newLog.operatingHours).toFixed(1),
+            currentFuelLevelPct: newFuelPct,
+            assignedParcel: newLog.parcelZone,
+            status: 'operating'
+          };
+        }
+        return m;
+      })
+    );
+
+    // If parcel had water/fertilizer, positively update soil moisture and health
+    setTrees((prev) =>
+      prev.map((t) => {
+        const matchesZone =
+          (newLog.parcelZone.includes('Alpha') && t.parcelZone.includes('Alpha')) ||
+          (newLog.parcelZone.includes('Beta') && t.parcelZone.includes('Beta')) ||
+          (newLog.parcelZone.includes('Gamma') && t.parcelZone.includes('Gamma')) ||
+          (newLog.parcelZone.includes('Citrus') && t.species.includes('Citrus')) ||
+          (newLog.parcelZone.includes('Fig') && t.species.includes('Fig'));
+
+        if (matchesZone && newLog.waterM3 > 0) {
+          return {
+            ...t,
+            soilMoisturePct: +(Math.min(44.0, t.soilMoisturePct + (newLog.waterM3 > 20 ? 8.0 : 4.0))).toFixed(1),
+            irrigationStatus: 'optimal'
+          };
+        }
+        return t;
+      })
+    );
+  };
+
+  const handleUpdateMachineryStatus = (machineryId: string, status: FarmMachinery['status'], assignedParcel?: string) => {
+    setMachinery((prev) =>
+      prev.map((m) => {
+        if (m.id === machineryId) {
+          return {
+            ...m,
+            status,
+            assignedParcel: assignedParcel || m.assignedParcel
+          };
+        }
+        return m;
+      })
+    );
+  };
+
   return (
     <div className="min-h-screen bg-[#F4F7F4] dark:bg-[#08120B] flex flex-col font-sans text-stone-900 dark:text-stone-100 antialiased selection:bg-emerald-200 selection:text-emerald-900 transition-colors duration-200">
       {/* Toast Notification Container (RTL Floating Alerts) */}
@@ -369,6 +448,7 @@ export default function App() {
             activeAlert={toasts[0] || null}
             onDismissAlert={dismissToast}
             onNavigateToPredictiveIrrigation={() => setActiveTab('predictive_irrigation')}
+            onNavigateToResourceConsumption={() => setActiveTab('resource_consumption')}
             liveWeather={liveWeather}
             onRefreshWeather={() => refreshWeather(true)}
             isWeatherLoading={isWeatherLoading}
@@ -389,6 +469,7 @@ export default function App() {
             onTriggerTreeAlert={() => triggerTreeAlert()}
             onTriggerLivestockAlert={() => triggerLivestockAlert()}
             onNavigateToPredictiveIrrigation={() => setActiveTab('predictive_irrigation')}
+            onNavigateToResourceConsumption={() => setActiveTab('resource_consumption')}
             liveWeather={liveWeather}
             onRefreshWeather={() => refreshWeather(true)}
             isWeatherLoading={isWeatherLoading}
@@ -407,6 +488,26 @@ export default function App() {
               addToast({
                 type,
                 category: 'tree',
+                title,
+                message,
+              });
+            }}
+          />
+        )}
+
+        {activeTab === 'resource_consumption' && (
+          <ResourceConsumptionView
+            farm={farm}
+            trees={trees}
+            machinery={machinery}
+            consumptionLogs={consumptionLogs}
+            onAddConsumptionLog={handleAddConsumptionLog}
+            onUpdateMachineryStatus={handleUpdateMachineryStatus}
+            onSelectTree={(tree) => setSelectedTree(tree)}
+            onShowToast={(title, message, type) => {
+              addToast({
+                type,
+                category: 'system',
                 title,
                 message,
               });
