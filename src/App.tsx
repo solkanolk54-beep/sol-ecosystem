@@ -409,7 +409,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F7F4] dark:bg-[#08120B] flex flex-col font-sans text-stone-900 dark:text-stone-100 antialiased selection:bg-emerald-200 selection:text-emerald-900 transition-colors duration-200">
+    <div className="min-h-screen bg-[#F4F7F4] dark:bg-[#08120B] flex flex-col font-sans text-stone-900 dark:text-stone-100 antialiased selection:bg-emerald-200 selection:text-emerald-900 transition-colors duration-200 overflow-x-hidden">
       {/* Toast Notification Container (RTL Floating Alerts) */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
@@ -432,8 +432,8 @@ export default function App() {
         }}
       />
 
-      {/* Main View Area */}
-      <main className="flex-1">
+      {/* Main View Area with Responsive Padding */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
         {activeTab === 'mobile_simulator' && (
           <MobileDeviceSimulator
             farm={farm}
