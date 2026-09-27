@@ -23,10 +23,24 @@ import {
   ChevronLeft,
   Filter,
   FileSpreadsheet,
-  Edit3
+  Edit3,
+  Sliders,
+  BarChart3,
+  Table,
+  CheckSquare,
+  Square,
+  Check,
+  X,
+  FileCheck
 } from 'lucide-react';
 import { Farm, Tree, LivestockAnimal, ResourceConsumptionLog, WeeklyAgronomicReport } from '../types';
 import { HISTORICAL_WEEKLY_REPORTS, buildDynamicWeeklySummary } from '../data/weeklySummaryData';
+import {
+  downloadAgronomicAuditCsv,
+  generateWeeklyAgronomicAuditCsv,
+  getViewFilterArabicLabel,
+  AgronomicViewFilter
+} from '../utils/agronomicAuditCsv';
 
 interface WeeklyAgronomicSummaryViewProps {
   farm: Farm;
@@ -51,6 +65,13 @@ export const WeeklyAgronomicSummaryView: React.FC<WeeklyAgronomicSummaryViewProp
   const [activeSectionFilter, setActiveSectionFilter] = useState<'all' | 'trees' | 'livestock' | 'resources' | 'actions'>('all');
   const [customAgronomistNotes, setCustomAgronomistNotes] = useState<string>('');
   const [isNotesEditing, setIsNotesEditing] = useState<boolean>(false);
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState<boolean>(false);
+  const [auditScope, setAuditScope] = useState<'current' | 'all'>('current');
+  const [includeChartSeries, setIncludeChartSeries] = useState<boolean>(true);
+  const [includeDetailedLedgers, setIncludeDetailedLedgers] = useState<boolean>(true);
+  const [includePhytosanitary, setIncludePhytosanitary] = useState<boolean>(true);
+  const [includeActionDirectives, setIncludeActionDirectives] = useState<boolean>(true);
+  const [includeAuditSignoff, setIncludeAuditSignoff] = useState<boolean>(true);
   const printAreaRef = useRef<HTMLDivElement>(null);
 
   // Generate dynamic report for selected week
@@ -91,54 +112,72 @@ export const WeeklyAgronomicSummaryView: React.FC<WeeklyAgronomicSummaryViewProp
     );
   };
 
-  // Helper: Download CSV export
-  const handleDownloadCsv = () => {
-    let csvContent = '\uFEFF'; // UTF-8 BOM for Excel Arabic support
-
-    // Metadata
-    csvContent += `التقرير الزراعي الأسبوعي الآلي - منظومة SOL الرقمية\n`;
-    csvContent += `رقم التقرير,${report.reportId}\n`;
-    csvContent += `الأسبوع,${report.weekNumber} (${report.startDate} إلى ${report.endDate})\n`;
-    csvContent += `المستثمرة,${report.estateName},المنطقة,${report.estateRegion}\n`;
-    csvContent += `المعدل العام للأداء الزراعي,${report.overallAgronomicScore}/100,${report.overallRatingLabel}\n\n`;
-
-    // 1. Parcels breakdown
-    csvContent += `=== 1. حالة القطع الشجرية والبساتين ===\n`;
-    csvContent += `معرف القطعة,اسم البستان,الصنف النباتي,عدد الأشجار,مؤشر الصحة %,مؤشر الخضرة NDVI,رطوبة التربة %,مياه الري (م³),عجز مائي (م³),التسميد NPK (كغ),التدخلات الوقائية\n`;
-    report.treeHealthSection.parcels.forEach((p) => {
-      csvContent += `"${p.parcelId}","${p.arabicName}","${p.cropVariety}",${p.treeCount},${p.healthScorePct}%,${p.ndviVigorIndex},${p.avgSoilMoisturePct}%,${p.waterAppliedM3},${p.waterDeficitM3},${p.fertilizerNpkKg},"${p.activeTreatments}"\n`;
-    });
-    csvContent += `\n`;
-
-    // 2. Livestock weights
-    csvContent += `=== 2. تطور أوزان الثروة الحيوانية ===\n`;
-    csvContent += `رقم الشريحة RFID,الاسم / الرمز,النوع,السلالة,المرعى,الوزن السابق (كغ),الوزن الحالي (كغ),صافي الزيادة (كغ),نسبة التغير %,معدل النمو اليومي (غ/يوم),مؤشر الحالة الجسمانية BCS,الحالة الصحية\n`;
-    report.livestockSection.animals.forEach((a) => {
-      csvContent += `"${a.tagRfid}","${a.nameOrAlias}","${a.species === 'cattle' ? 'بقر' : 'غنم'}","${a.breed}","${a.pastureZone}",${a.previousWeightKg},${a.currentWeightKg},${a.weightChangeKg},${a.weightChangePct}%,${a.adgGramsDay},${a.bodyConditionScore},"${a.healthCondition}"\n`;
-    });
-    csvContent += `\n`;
-
-    // 3. Resource efficiency
-    csvContent += `=== 3. كفاءة استهلاك الموارد المزرعية ===\n`;
-    csvContent += `المورد,الاستهلاك الفعلي,المعيار المقارن,معدل الكفاءة %,الوفر المحقق,التكلفة التقديرية (دج),ملاحظات الترشيد\n`;
-    report.resourceEfficiencySection.metrics.forEach((m) => {
-      csvContent += `"${m.nameArabic}",${m.totalConsumed} ${m.unit},${m.targetBenchmark} ${m.unit},${m.efficiencyPct}%,${m.savingsVsBaseline} ${m.savingsUnit},${m.costDzd} دج,"${m.statusNote}"\n`;
+  // Helper: Direct One-Click CSV Audit Export for Current View
+  const handleDownloadCsv = (filterOverride?: AgronomicViewFilter) => {
+    const filterToUse = filterOverride ?? activeSectionFilter;
+    const result = downloadAgronomicAuditCsv(report, {
+      viewFilter: filterToUse,
+      includeChartSeries: true,
+      includeDetailedLedgers: true,
+      includePhytosanitary: true,
+      includeActionDirectives: true,
+      includeAuditSignoff: true,
+      customNotes: customAgronomistNotes
     });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${report.reportId}_AgriData.csv`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
+    const filterName = getViewFilterArabicLabel(filterToUse);
     onShowToast?.(
-      'تم تصدير ملف CSV الزراعي',
-      'تم إنشاء وتنزيل جدول البيانات المتكامل لأوزان الماشية والقطع الشجرية والموارد.',
+      'تم تصدير ملف التدقيق الفلاحي (CSV)',
+      `تم تنزيل بيانات ومخططات (${filterName}) بنجاح للتدقيق المهني (${result.rowCount} سطر).`,
       'success'
     );
+  };
+
+  // Helper: Custom Audit Modal Export
+  const handleAuditModalExport = () => {
+    const filterToUse: AgronomicViewFilter = auditScope === 'current' ? activeSectionFilter : 'all';
+    const result = downloadAgronomicAuditCsv(report, {
+      viewFilter: filterToUse,
+      includeChartSeries,
+      includeDetailedLedgers,
+      includePhytosanitary,
+      includeActionDirectives,
+      includeAuditSignoff,
+      customNotes: customAgronomistNotes
+    });
+
+    setIsAuditModalOpen(false);
+    const filterName = getViewFilterArabicLabel(filterToUse);
+    onShowToast?.(
+      'تم إنشاء وتنزيل وثيقة التدقيق (CSV)',
+      `تم تصدير ${result.fileName} بنجاح (${result.sectionsCount} أقسام رقابية و${result.rowCount} سطر).`,
+      'success'
+    );
+  };
+
+  // Helper: Copy CSV text to Clipboard for immediate paste into Excel / Sheets
+  const handleCopyAuditCsv = async () => {
+    const filterToUse: AgronomicViewFilter = auditScope === 'current' ? activeSectionFilter : 'all';
+    const result = generateWeeklyAgronomicAuditCsv(report, {
+      viewFilter: filterToUse,
+      includeChartSeries,
+      includeDetailedLedgers,
+      includePhytosanitary,
+      includeActionDirectives,
+      includeAuditSignoff,
+      customNotes: customAgronomistNotes
+    });
+
+    try {
+      await navigator.clipboard.writeText(result.csvContent);
+      onShowToast?.(
+        'تم نسخ جدول CSV للحافظة',
+        `تم نسخ ${result.rowCount} سطر من بيانات ومخططات التدقيق للّصق في برامج الجداول الإلكترونية.`,
+        'success'
+      );
+    } catch {
+      onShowToast?.('تنبيه', 'تعذر النسخ التلقائي للجدول.', 'warning');
+    }
   };
 
   // Helper: Copy executive briefing to clipboard
@@ -217,14 +256,35 @@ export const WeeklyAgronomicSummaryView: React.FC<WeeklyAgronomicSummaryViewProp
               <span>طباعة / حفظ كـ PDF</span>
             </button>
 
-            <button
-              onClick={handleDownloadCsv}
-              className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-bold border border-stone-300 dark:border-stone-700 transition-all cursor-pointer"
-              title="تنزيل جدول بيانات CSV كامل"
-            >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>تصدير CSV</span>
-            </button>
+            {/* Split Audit CSV Export Button */}
+            <div className="flex items-center rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 shadow-xs overflow-hidden">
+              <button
+                onClick={() => handleDownloadCsv()}
+                className="flex items-center gap-1.5 px-3 py-2.5 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-900 dark:text-stone-100 text-xs font-extrabold transition-all cursor-pointer"
+                title={`تصدير بيانات ومخططات التدقيق للعرض الحالي [${getViewFilterArabicLabel(activeSectionFilter)}] كملف CSV`}
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>تصدير تدقيق العرض (CSV)</span>
+                <span className="text-[9px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded font-bold mr-1">
+                  {activeSectionFilter === 'all'
+                    ? 'الكل'
+                    : activeSectionFilter === 'trees'
+                    ? 'الأشجار'
+                    : activeSectionFilter === 'livestock'
+                    ? 'المواشي'
+                    : activeSectionFilter === 'resources'
+                    ? 'الموارد'
+                    : 'التوصيات'}
+                </span>
+              </button>
+              <button
+                onClick={() => setIsAuditModalOpen(true)}
+                className="px-2.5 py-2.5 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 border-r border-stone-200 dark:border-stone-700 transition-all cursor-pointer"
+                title="فتح خيارات تصدير التدقيق المهني والمخططات المتقدمة"
+              >
+                <Sliders className="w-3.5 h-3.5 text-stone-600 dark:text-stone-300" />
+              </button>
+            </div>
 
             <button
               onClick={handleDownloadJson}
@@ -531,19 +591,29 @@ export const WeeklyAgronomicSummaryView: React.FC<WeeklyAgronomicSummaryViewProp
                 <span className="w-2.5 h-6 rounded-md bg-emerald-600 print:bg-black inline-block"></span>
                 <span>1. صحة الأشجار والغطاء النباتي (Tree Health Telemetry)</span>
               </h3>
-              <div className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-3">
-                <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-                  سليمة: {report.treeHealthSection.healthyCount}
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-                  عناية: {report.treeHealthSection.needsAttentionCount}
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
-                  مصابة: {report.treeHealthSection.diseasedCount}
-                </span>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-3">
+                  <span className="flex items-center gap-1">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                    سليمة: {report.treeHealthSection.healthyCount}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                    عناية: {report.treeHealthSection.needsAttentionCount}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+                    مصابة: {report.treeHealthSection.diseasedCount}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleDownloadCsv('trees')}
+                  className="print:hidden flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer"
+                  title="تصدير بيانات ومخططات الأشجار كـ CSV للتدقيق المهني"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <span>تصدير تدقيق الأشجار (CSV)</span>
+                </button>
               </div>
             </div>
 
@@ -677,12 +747,22 @@ export const WeeklyAgronomicSummaryView: React.FC<WeeklyAgronomicSummaryViewProp
                 <span className="w-2.5 h-6 rounded-md bg-amber-600 print:bg-black inline-block"></span>
                 <span>2. تطور أوزان وصحة الثروة الحيوانية (Livestock Growth & BCS)</span>
               </h3>
-              <div className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-2">
-                <span>إجمالي الرؤوس: <strong>{report.livestockSection.totalLivestock}</strong></span>
-                <span>•</span>
-                <span>حليب الأبقار: <strong>{report.livestockSection.dailyMilkYieldLiters} لتر/يوم</strong></span>
-                <span>•</span>
-                <span>الامتثال البيطري: <strong className="text-emerald-600">100%</strong></span>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-2">
+                  <span>إجمالي الرؤوس: <strong>{report.livestockSection.totalLivestock}</strong></span>
+                  <span>•</span>
+                  <span>حليب الأبقار: <strong>{report.livestockSection.dailyMilkYieldLiters} لتر/يوم</strong></span>
+                  <span>•</span>
+                  <span>الامتثال البيطري: <strong className="text-emerald-600">100%</strong></span>
+                </div>
+                <button
+                  onClick={() => handleDownloadCsv('livestock')}
+                  className="print:hidden flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 text-[11px] font-bold border border-amber-200 dark:border-amber-800 transition-colors cursor-pointer"
+                  title="تصدير سجلات أوزان المواشي والنمو اليومي كـ CSV للتدقيق المهني"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <span>تصدير تدقيق المواشي (CSV)</span>
+                </button>
               </div>
             </div>
 
@@ -773,12 +853,22 @@ export const WeeklyAgronomicSummaryView: React.FC<WeeklyAgronomicSummaryViewProp
                 <span className="w-2.5 h-6 rounded-md bg-cyan-600 print:bg-black inline-block"></span>
                 <span>3. كفاءة استهلاك الموارد المزرعية والآلات (Resource Efficiency)</span>
               </h3>
-              <div className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-3">
-                <span>مؤشر الكفاءة: <strong className="text-emerald-600">{report.resourceEfficiencySection.overallEfficiencyIndex}%</strong></span>
-                <span>•</span>
-                <span>تكلفة الأسبوع: <strong>{report.resourceEfficiencySection.totalOperatingCostDzd.toLocaleString()} دج</strong></span>
-                <span>•</span>
-                <span>خفض الكربون: <strong>{report.resourceEfficiencySection.carbonOffsetKgCo2} كغ CO₂-eq</strong></span>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-3">
+                  <span>مؤشر الكفاءة: <strong className="text-emerald-600">{report.resourceEfficiencySection.overallEfficiencyIndex}%</strong></span>
+                  <span>•</span>
+                  <span>تكلفة الأسبوع: <strong>{report.resourceEfficiencySection.totalOperatingCostDzd.toLocaleString()} دج</strong></span>
+                  <span>•</span>
+                  <span>خفض الكربون: <strong>{report.resourceEfficiencySection.carbonOffsetKgCo2} كغ CO₂-eq</strong></span>
+                </div>
+                <button
+                  onClick={() => handleDownloadCsv('resources')}
+                  className="print:hidden flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-50 dark:bg-cyan-950/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/60 text-cyan-800 dark:text-cyan-300 text-[11px] font-bold border border-cyan-200 dark:border-cyan-800 transition-colors cursor-pointer"
+                  title="تصدير بيانات ترشيد الموارد ومعايير FAO-56 كـ CSV للتدقيق المهني"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <span>تصدير تدقيق الموارد (CSV)</span>
+                </button>
               </div>
             </div>
 
@@ -849,10 +939,20 @@ export const WeeklyAgronomicSummaryView: React.FC<WeeklyAgronomicSummaryViewProp
         {/* 5. AGRONOMIC ACTION PLAN & IMMEDIATE DIRECTIVES */}
         {(activeSectionFilter === 'all' || activeSectionFilter === 'actions') && (
           <div className="space-y-4 pt-4 border-t border-stone-200 dark:border-stone-800 print:border-stone-300">
-            <h3 className="text-base sm:text-lg font-black text-stone-900 dark:text-white flex items-center gap-2 print:text-black">
-              <span className="w-2.5 h-6 rounded-md bg-purple-600 print:bg-black inline-block"></span>
-              <span>4. التدخلات المبرمجة وتوصيات المهندس للأسبوع القادم</span>
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <h3 className="text-base sm:text-lg font-black text-stone-900 dark:text-white flex items-center gap-2 print:text-black">
+                <span className="w-2.5 h-6 rounded-md bg-purple-600 print:bg-black inline-block"></span>
+                <span>4. التدخلات المبرمجة وتوصيات المهندس للأسبوع القادم</span>
+              </h3>
+              <button
+                onClick={() => handleDownloadCsv('actions')}
+                className="print:hidden flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-purple-800 dark:text-purple-300 text-[11px] font-bold border border-purple-200 dark:border-purple-800 transition-colors cursor-pointer"
+                title="تصدير خطة التدخلات والتوصيات الفلاحية كـ CSV للتدقيق المهني"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <span>تصدير خطة التوصيات (CSV)</span>
+              </button>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {report.actionItems.map((action) => (
@@ -1008,6 +1108,213 @@ export const WeeklyAgronomicSummaryView: React.FC<WeeklyAgronomicSummaryViewProp
           </div>
         </div>
       </div>
+
+      {/* 3. PROFESSIONAL AUDIT CSV EXPORT MODAL */}
+      {isAuditModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 print:hidden"
+        >
+          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-stone-200 dark:border-stone-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center border border-emerald-300 dark:border-emerald-800">
+                  <FileSpreadsheet className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-stone-900 dark:text-white flex items-center gap-2">
+                    <span>تصدير بيانات ومخططات التدقيق الفلاحي (CSV)</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-full font-bold">
+                      Professional Audit
+                    </span>
+                  </h3>
+                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                    توليد ملف CSV معتمد وفق المعايير الرقابية يدمج سلاسل الرسوم البيانية ومؤشرات الأداء التجميعية.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsAuditModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center text-stone-600 dark:text-stone-300 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Scope Selection */}
+            <div className="space-y-3">
+              <label className="text-xs font-black text-stone-900 dark:text-white block">
+                1. تحديد نطاق التدقيق المطلوب للتصدير:
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Option A: Current View Only */}
+                <div
+                  onClick={() => setAuditScope('current')}
+                  className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                    auditScope === 'current'
+                      ? 'border-[#0F5132] bg-emerald-50/60 dark:bg-emerald-950/30 ring-2 ring-[#0F5132]/30'
+                      : 'border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/40 hover:bg-stone-100 dark:hover:bg-stone-800'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-stone-900 dark:text-white flex items-center gap-2">
+                      <Filter className="w-4 h-4 text-[#0F5132] dark:text-emerald-400" />
+                      <span>بيانات ومخططات العرض الحالي</span>
+                    </span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-full font-bold">
+                      {activeSectionFilter === 'all'
+                        ? 'التقرير الشامل'
+                        : activeSectionFilter === 'trees'
+                        ? 'صحة الأشجار'
+                        : activeSectionFilter === 'livestock'
+                        ? 'أوزان المواشي'
+                        : activeSectionFilter === 'resources'
+                        ? 'كفاءة الموارد'
+                        : 'التوصيات'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-2 leading-tight">
+                    يصدر الجداول والرسوم البيانية المفلترة حالياً في الشاشة ({getViewFilterArabicLabel(activeSectionFilter)}).
+                  </p>
+                </div>
+
+                {/* Option B: Full Master Audit */}
+                <div
+                  onClick={() => setAuditScope('all')}
+                  className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                    auditScope === 'all'
+                      ? 'border-[#0F5132] bg-emerald-50/60 dark:bg-emerald-950/30 ring-2 ring-[#0F5132]/30'
+                      : 'border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/40 hover:bg-stone-100 dark:hover:bg-stone-800'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-stone-900 dark:text-white flex items-center gap-2">
+                      <Award className="w-4 h-4 text-[#0F5132] dark:text-emerald-400" />
+                      <span>التدقيق الزراعي الشامل المتكامل</span>
+                    </span>
+                    <span className="text-[10px] bg-stone-200 text-stone-800 dark:bg-stone-700 dark:text-stone-300 px-2 py-0.5 rounded-full font-bold">
+                      5 أقسام كاملة
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-2 leading-tight">
+                    سجل شامل يضم صحة الأشجار، أوزان المواشي، كفاءة الموارد، خطة التدخلات، ومصادقة البلوكشين.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Checkboxes: Audit Components */}
+            <div className="space-y-2.5">
+              <label className="text-xs font-black text-stone-900 dark:text-white block">
+                2. المكونات الرقابية والمخططات المضمنة:
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <label className="flex items-center gap-2 p-2 rounded-xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-800 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeChartSeries}
+                    onChange={(e) => setIncludeChartSeries(e.target.checked)}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <BarChart3 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="font-bold text-stone-800 dark:text-stone-200">
+                      جداول الرسوم البيانية وسلاسل التوزيع
+                    </span>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-2 p-2 rounded-xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-800 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeDetailedLedgers}
+                    onChange={(e) => setIncludeDetailedLedgers(e.target.checked)}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <Table className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="font-bold text-stone-800 dark:text-stone-200">
+                      السجلات والمصفوفات الميدانية المفصلة
+                    </span>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-2 p-2 rounded-xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-800 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includePhytosanitary}
+                    onChange={(e) => setIncludePhytosanitary(e.target.checked)}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="font-bold text-stone-800 dark:text-stone-200">
+                      سجل التدخلات الفيتوصحية والبيطرية
+                    </span>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-2 p-2 rounded-xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-800 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeAuditSignoff}
+                    onChange={(e) => setIncludeAuditSignoff(e.target.checked)}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="font-bold text-stone-800 dark:text-stone-200">
+                      إقرار المصادقة القانونية والتوقيع الرقمي
+                    </span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Audit Certificate Box & File Preview */}
+            <div className="bg-stone-50 dark:bg-stone-800/40 p-3.5 rounded-2xl border border-stone-200 dark:border-stone-800 space-y-1.5 text-xs">
+              <div className="flex items-center justify-between text-[11px] text-stone-600 dark:text-stone-300">
+                <span>تنسيق الترميز: <strong>UTF-8 BOM (متوافق مع Microsoft Excel العربي)</strong></span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold">معتمد رسمياً SOL-AUDIT</span>
+              </div>
+              <div className="text-[11px] text-stone-500 dark:text-stone-400">
+                بصمة التوثيق: <span className="font-mono text-[10px]">{report.supervisingAgronomist.digitalSignatureHash.substring(0, 32)}...</span>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2 border-t border-stone-200 dark:border-stone-800">
+              <button
+                onClick={handleCopyAuditCsv}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <Copy className="w-4 h-4 text-stone-500" />
+                <span>نسخ جدول CSV للحافظة</span>
+              </button>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button
+                  onClick={() => setIsAuditModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 text-stone-700 dark:text-stone-300 text-xs font-bold transition-all cursor-pointer"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={handleAuditModalExport}
+                  className="px-5 py-2.5 rounded-xl bg-[#0F5132] hover:bg-[#13653f] text-white text-xs font-black shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Download className="w-4 h-4 text-emerald-300" />
+                  <span>تنزيل ملف CSV المعتمد الآن</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* PRINT-SPECIFIC CSS RULES INJECTED SAFELY */}
       <style>{`

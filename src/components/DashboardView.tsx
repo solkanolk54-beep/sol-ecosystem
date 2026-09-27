@@ -22,7 +22,8 @@ import {
   Tractor,
   Sprout,
   BarChart3,
-  FileText
+  FileText,
+  FileSpreadsheet
 } from 'lucide-react';
 import { Farm, Tree, LivestockAnimal, TraceabilityBatch } from '../types';
 import { LiveWeatherData } from '../services/weatherService';
@@ -587,11 +588,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   الأسبوع 39 • معتمد (A+ 93.8/100)
                 </span>
                 <span className="text-[10px] font-bold bg-white/10 text-emerald-200 px-2 py-0.5 rounded-full border border-white/10">
-                  جاهز للطباعة والتحميل كـ PDF
+                  PDF معتمد • تصدير تدقيق CSV
                 </span>
               </div>
               <p className="text-xs text-emerald-100/90 mt-1 max-w-2xl leading-relaxed">
-                تجميع ذكي شامل لبيانات صحة أشجار الزيتون (NDVI ومؤشر السلامة 89.9%)، تغيرات أوزان الماشية ومعدل النمو اليومي (+485 غ/يوم)، ومؤشرات كفاءة استهلاك المياه والأسمدة والديزل، موثق بتوقيع المهندس الزراعي المشرف.
+                تجميع ذكي شامل لبيانات صحة أشجار الزيتون (NDVI ومؤشر السلامة 89.9%)، تغيرات أوزان الماشية ومعدل النمو اليومي (+485 غ/يوم)، ومؤشرات كفاءة استهلاك المياه والأسمدة والديزل، مع خاصية تصدير بيانات ومخططات العرض كـ CSV للتدقيق الفلاحي المهني.
               </p>
             </div>
           </div>
@@ -601,8 +602,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onClick={onNavigateToWeeklySummary}
               className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#A3E635] hover:bg-[#91ce2b] text-[#0F5132] font-black text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              <FileText className="w-4 h-4" />
-              <span>معاينة وتحميل التقرير الكامل PDF</span>
+              <FileSpreadsheet className="w-4 h-4 text-[#0F5132]" />
+              <span>معاينة التقرير وتصدير التدقيق (PDF & CSV)</span>
               <ChevronLeft className="w-4 h-4" />
             </button>
           </div>
